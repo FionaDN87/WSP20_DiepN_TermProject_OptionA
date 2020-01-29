@@ -36,10 +36,12 @@ async function signIn(){
         
     }catch (e){
 
-        glPageContent.innerHTML='Login Failed: <br>' + e + '<br>'
-        glPageContent+='<a href="/login" class="btn btn-outline-primary">Go To Login</a>'
-        
-
+        glPageContent.innerHTML= `
+        Login Failed:<br>
+        ${e} 
+        <br>
+        <a href="/login" class="btn btn-outline-primary">Go To Login</a>
+        `; 
 
     }
 }
