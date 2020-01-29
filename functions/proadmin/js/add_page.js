@@ -44,7 +44,7 @@ function add_page_secured(){
 async function addProduct(){
     const name = document.getElementById('name').value
     const summary = document.getElementById('summary').value
-    const price = document.getElementById('price').value
+    let price = document.getElementById('price').value
 
     //validate input
     const nameErrorTag = document.getElementById('name_error')
@@ -69,8 +69,24 @@ async function addProduct(){
      const taskSnapshot = await ref.put(glImageFile2Add)
      const image_url = await taskSnapshot.ref.getDownloadURL()
 
-     console.log('image_url', image_url)
+
+    // product: name, summary, price in Firestore
+    price = Number(price)    //convert price to number and store
+    await firebase.firestore().collection(COLLECTION).doc()
+        .set({name, summary, price, image, image_url})
+
+
+     //console.log('image_url', image_url)   //for testing
+
+     glPageContent.innerHTML=`
+     <h1>${name} is added</h1>
+     <a href="/show" class="btn btn-outline-primary">Show All</a>
+     `;
  } catch (e){
+     glPageContent.innerHTML=`
+     <h1>Cannot add a product</h1>
+     ${JSON.stringify(e)}
+     `;
 
  }
 
