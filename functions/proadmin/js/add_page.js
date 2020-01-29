@@ -2,6 +2,8 @@ function add_page(){
    
     add_page_secured()
 }
+let glImageFile2Add; //File selected by imageButton
+
 function add_page_secured(){
     glPageContent.innerHTML = '<h1>Add Page</h1>'
     glPageContent.innerHTML=`
@@ -9,26 +11,68 @@ function add_page_secured(){
     <a href='/show' class="btn btn-outline-primary">Show Products</a>
     <div class = "form-group">
         Name: <input class="form-control" type="text" id="name" />
+        <p id="name_error" style="color:red;" />
     </div>
+
 
     <div class="form-group">
         Summary:<br>
         <textarea class="form-control" id="summary" cols="40" rows="5"></textarea>
+        <p id="summary_error" style="color:red;" />
     </div>
 
     <div class="form-group">
         Price:<input class="form-control" type="text" id="price" />
+        <p id="price_error" style="color:red;" />
     </div>
 
     <div class = "form-group">
         Image: <input type="file" id="imageButton" value="upload" />
+        <p id="image_error" style="color:red;" />
     </div>
 
     <button class="btn btn-primary" type="button" onclick="addProduct()">Add</button>
 
     `;
     const imageButton  = document.getElementById('imageButton')
-    imageButton.addEventListener('change',e=>{
-        console.log('file upload', e.target.files[0])
+    imageButton.addEventListener('change', e => {
+        glImageFile2Add = e.target.files[0]
+        //console.log('file upload', e.target.files[0])
     })
+}
+
+async function addProduct(){
+    const name = document.getElementById('name').value
+    const summary = document.getElementById('summary').value
+    const price = document.getElementById('price').value
+
+    //validate input
+    const nameErrorTag = document.getElementById('name_error')
+    const summaryErrorTag = document.getElementById('summary_error')
+    const priceErrorTag = document.getElementById('price_error')
+    const imageErrorTag = document.getElementById('image_error')
+
+
+    nameErrorTag.innerHTML = validate_name(name)
+    summaryErrorTag.innerHTML = validate_summary(summary)
+    priceErrorTag.innerHTML = validate_price(price)
+    imageErrorTag.innerHTML = !glImageFile2Add ? 'Error: image file not selected' : null
+
+    if(nameErrorTag.innerHTML || summaryErrorTag.innerHTML || priceErrorTag.innerHTML || imageErrorTag.innerHTML)
+        return
+ 
+//ADD PRODUCT INTO FIREBASE
+//--- Upload Image ---
+ try{
+     const image  = Date.now() + glImageFile2Add.name    //unique name
+     const ref = firebase.storage().ref(IMAGE_FOLDER + image)
+     const taskSnapshot = await ref.put(glImageFile2Add)
+     const image_url = await taskSnapshot.ref.getDownloadURL()
+
+     console.log('image_url', image_url)
+ } catch (e){
+
+ }
+
+
 }
