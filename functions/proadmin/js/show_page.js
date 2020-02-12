@@ -40,6 +40,12 @@ async function show_page_secured(){
             <div class="card-body">
             <h5 class="card-title">${p.name}</h5>
             <p class="card-text">${p.price}<br/>${p.summary}</p>
+
+            <button class="btn btn-primary" type ="button"
+                onclick="editProduct(${index})">Edit</button>
+
+            <button class="btn btn-danger" type ="button"
+                onclick="deleteProduct(${index})">Delete</button>
           
             </div>
         </div>
