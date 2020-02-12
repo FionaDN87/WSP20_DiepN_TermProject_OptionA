@@ -1,6 +1,7 @@
 function show_page(){
-    //glPageContent.innerHTML = '<h1>Show Page</h1>'
-    show_page_secured()
+
+    auth('prodadmin@test.com', show_page_secured,'/login')
+    //show_page_secured()
    
 }
 //Global variable

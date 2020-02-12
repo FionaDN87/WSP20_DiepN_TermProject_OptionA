@@ -1,6 +1,6 @@
 function add_page(){
-   
-    add_page_secured()
+    auth('prodadmin@test.com', add_page_secured,'/login')
+    //add_page_secured()
 }
 let glImageFile2Add; //File selected by imageButton
 
