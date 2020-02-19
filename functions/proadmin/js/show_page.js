@@ -6,6 +6,9 @@ function show_page(){
 }
 //Global variable
 let products;   //list of all products read from db
+let lastVisible;
+let limitDisplay = 3;
+var pageNumber = 1;
 async function show_page_secured(){
     glPageContent.innerHTML = '<h1>Show Products</h1>'
 
@@ -14,21 +17,57 @@ async function show_page_secured(){
     <a href='/add' class="btn btn-outline-primary">Add a Products</a>
     <br/>
     `;
-    try{
+    
+        try{
         products = []   //array of products
+       
+      
         const snapshot = await firebase.firestore().collection(COLLECTION)
                         //.where("name", "==","Crochet animal")
-                        //.orderBy("price")
-                      
-                        //.where("price", "==",35)                              //Give query
+                        .orderBy("prodID")
+                        .limit(limitDisplay)  
+                        .startAt(1)
+                                                                             //Limit certain project/page
+                                //Give query
                         .get()
-        snapshot.forEach(doc =>{
-            const{name,summary,price,image,image_url} = doc.data()
-            const p = {docId: doc.id,name,summary,price, image,image_url}
-            products.push(p)
-        })
+       
+        .then(function(snapshot){
+            snapshot.forEach(doc =>{
+                const{prodID,name,summary,price,image,image_url} = doc.data()
+                const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                products.push(p)
+
+            });
+        lastVisible = limitDisplay;
+        console.log("last visible product index", lastVisible);
+        
+       
+       
+        });
+        //Display Pagination bar emphasizing this is the first page
+        //First page limit displaying 3 items 
+        glPageContent.innerHTML+=`
+        <nav aria-label="...">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="#" tabindex="-1">Previous</a>
+          </li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item">
+            <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li>
+          <button class="btn btn-danger" type ="button"
+          onclick="nextPage(lastVisible)">Next</button>
+          </li>
+        </ul>
+      </nav>
+        `;
+            
+
     }catch (e){
-        glPageContent.innerHTML='Forestore access error. Try again!!!!' + e
+        glPageContent.innerHTML='Firestore access error. Try again!!!!' + e
         return
     }
     //console.log(products)
@@ -45,7 +84,7 @@ async function show_page_secured(){
         <div id="${p.docId}" class="card" style="width: 18rem; display: inline-block">
             <img src="${p.image_url}" class="card-img-top" >
             <div class="card-body">
-            <h5 class="card-title">${p.name}</h5>
+            <h5 class="card-title">ProductID: ${p.prodID}<br/>${p.name}</h5>
             <p class="card-text">${p.price}<br/>${p.summary}</p>
 
             <button class="btn btn-primary" type ="button"
@@ -203,4 +242,101 @@ async function deleteProduct(index){
     }catch(e){
             glPageContent.innerHTML = 'Delete Error: <br>' + JSON.stringify(e)
         }
+    }
+var nextVisible;    //Gloval variable
+//Dislay nextPage
+    async function nextPage(lastVisible)
+    {
+        lastVisible=limitDisplay
+        console.log("last visible product ID(top)", lastVisible);
+        //Call firestore, display from previous last visible index
+        try{
+            products = []   //empty array of products
+            nextVisible = lastVisible+1;
+            console.log("counted lastVisible: " + lastVisible);
+            console.log("counted nextVisible: " + nextVisible);
+            
+            //Sorted by prodID
+            const snapshot = await firebase.firestore().collection(COLLECTION)
+                            .orderBy("prodID")                  //prodID starts from 1
+                            .limit(limitDisplay)  
+                            .startAt(nextVisible)            //Limit certain project/page
+                                           //Give query
+                            .get()
+            
+            .then(function(snapshot){
+                snapshot.forEach(doc =>{
+                    const{prodID,name,summary,price,image,image_url} = doc.data()
+                    const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                    products.push(p)    
+                });
+                
+                lastVisible=nextVisible+limitDisplay-1  
+                console.log("last visible product ID", lastVisible);
+
+                //Increase page# by 1 
+                pageNumber++;
+
+                //Erase previous page html content, display next page content
+                glPageContent.innerHTML=`
+                <h1>Show Products</h1>         
+                <a href='/home' class="btn btn-outline-primary">Home</a>
+                <a href='/add' class="btn btn-outline-primary">Add a Products</a>
+                <br/>
+                `;
+                glPageContent.innerHTML=`Page: `+ pageNumber;       //Indicate which page user is currentl at
+
+                console.log("last visible product ID(2)", lastVisible);
+                glPageContent.innerHTML+=`
+                <nav aria-label="...">
+                <ul class="pagination">
+                  <li class="page-item">
+                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                  </li>
+                  <li class="page-item"><a class="page-link" href="#">1</a></li>
+                  <li class="page-item">
+                    <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
+                  </li>
+                  <li class="page-item"><a class="page-link" href="#">3</a></li>
+                  <li>
+                  <button class="btn btn-danger" type ="button"
+                  onclick="nextPage(lastVisible)">Next</button>
+                  </li>
+                </ul>
+              </nav>
+                `;
+                //Display limit products of relevant page
+              
+                for (let index = 0; index < products.length; index++){
+                    const p = products[index]
+                    if(!p) continue;
+                    glPageContent.innerHTML +=`
+                    <div id="${p.docId}" class="card" style="width: 18rem; display: inline-block">
+                    <img src="${p.image_url}" class="card-img-top" >
+                    <div class="card-body">
+                    <h5 class="card-title">ProductID: ${p.prodID}<br/>${p.name}</h5>
+                    <p class="card-text">${p.price}<br/>${p.summary}</p>
+                    
+                    <button class="btn btn-primary" type ="button"
+                        onclick="editProduct(${index})">Edit</button>
+        
+                    <button class="btn btn-danger" type ="button"
+                        onclick="deleteProduct(${index})">Delete</button>
+                  
+                    </div>
+                </div>
+                    
+                    `;
+             
+               
+                }
+                
+               
+                
+            });
+        }catch (e){
+            glPageContent.innerHTML='Forestore access error. Try again!!!!' + e
+            return
+        }
+
     }
