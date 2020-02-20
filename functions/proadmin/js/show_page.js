@@ -9,6 +9,7 @@ let products;   //list of all products read from db
 let lastVisible;
 let limitDisplay = 3;
 var pageNumber = 1;
+var nextVisible;    //Gloval variable
 async function show_page_secured(){
     glPageContent.innerHTML = '<h1>Show Products</h1>'
 
@@ -17,20 +18,33 @@ async function show_page_secured(){
     <a href='/add' class="btn btn-outline-primary">Add a Products</a>
     <br/>
     `;
+    var totalProducts=[]
+    const querySnapshot = firebase.firestore().collection(COLLECTION).get()
+    .then(function(querySnapshot){
+       querySnapshot.forEach(doc =>{
+            const{prodID,name,summary,price,image,image_url} = doc.data()
+            const t = {docId: doc.id,prodID,name,summary,price, image,image_url}
+            totalProducts.push(t)
+
+        });
+
+
+    });
+
+
     
         try{
         products = []   //array of products
-       
-      
+
         const snapshot = await firebase.firestore().collection(COLLECTION)
                         //.where("name", "==","Crochet animal")
                         .orderBy("prodID")
                         .limit(limitDisplay)  
                         .startAt(1)
-                                                                             //Limit certain project/page
+   //Limit certain project/page
                                 //Give query
                         .get()
-       
+        
         .then(function(snapshot){
             snapshot.forEach(doc =>{
                 const{prodID,name,summary,price,image,image_url} = doc.data()
@@ -38,11 +52,11 @@ async function show_page_secured(){
                 products.push(p)
 
             });
-        lastVisible = limitDisplay;
-        console.log("last visible product index", lastVisible);
+        //Define the last visible product
+        lastVisible = products[limitDisplay-1].prodID
+        console.log("last visible product index (ShowPageSecured): ", lastVisible);
         
-       
-       
+    
         });
         //Display Pagination bar emphasizing this is the first page
         //First page limit displaying 3 items 
@@ -50,7 +64,9 @@ async function show_page_secured(){
         <nav aria-label="...">
         <ul class="pagination">
           <li class="page-item">
-            <a class="page-link" href="#" tabindex="-1">Previous</a>
+          <button class="btn btn-danger" type ="button"
+          onclick="nextPage(lastVisible)">Previous</button>
+            <!--
           </li>
           <li class="page-item active"><a class="page-link" href="#">1</a></li>
           <li class="page-item">
@@ -58,8 +74,9 @@ async function show_page_secured(){
           </li>
           <li class="page-item"><a class="page-link" href="#">3</a></li>
           <li>
+          -->
           <button class="btn btn-danger" type ="button"
-          onclick="nextPage(lastVisible)">Next</button>
+          onclick="nextPage(${lastVisible},products)">Next</button>
           </li>
         </ul>
       </nav>
@@ -243,16 +260,19 @@ async function deleteProduct(index){
             glPageContent.innerHTML = 'Delete Error: <br>' + JSON.stringify(e)
         }
     }
-var nextVisible;    //Gloval variable
+
 //Dislay nextPage
-    async function nextPage(lastVisible)
+    async function nextPage(lastVisible,prevProducts)
     {
-        lastVisible=limitDisplay
-        console.log("last visible product ID(top)", lastVisible);
+        
+        //console.log(prevProducts.length);
+        
+        console.log("last visible product ID(topNextPage)", lastVisible);
         //Call firestore, display from previous last visible index
         try{
             products = []   //empty array of products
-            nextVisible = lastVisible+1;
+            nextVisible = (prevProducts[(prevProducts.length) -1].prodID);
+           
             console.log("counted lastVisible: " + lastVisible);
             console.log("counted nextVisible: " + nextVisible);
             
@@ -261,7 +281,7 @@ var nextVisible;    //Gloval variable
                             .orderBy("prodID")                  //prodID starts from 1
                             .limit(limitDisplay)  
                             .startAt(nextVisible)            //Limit certain project/page
-                                           //Give query
+                                      //Give query
                             .get()
             
             .then(function(snapshot){
@@ -284,7 +304,7 @@ var nextVisible;    //Gloval variable
                 <a href='/add' class="btn btn-outline-primary">Add a Products</a>
                 <br/>
                 `;
-                glPageContent.innerHTML=`Page: `+ pageNumber;       //Indicate which page user is currentl at
+                glPageContent.innerHTML+=`Page: `+ pageNumber;       //Indicate which page user is currentl at
 
                 console.log("last visible product ID(2)", lastVisible);
                 glPageContent.innerHTML+=`
@@ -292,6 +312,7 @@ var nextVisible;    //Gloval variable
                 <ul class="pagination">
                   <li class="page-item">
                     <a class="page-link" href="#" tabindex="-1">Previous</a>
+                    <!--
                   </li>
                   <li class="page-item"><a class="page-link" href="#">1</a></li>
                   <li class="page-item">
@@ -299,8 +320,112 @@ var nextVisible;    //Gloval variable
                   </li>
                   <li class="page-item"><a class="page-link" href="#">3</a></li>
                   <li>
+                  -->
                   <button class="btn btn-danger" type ="button"
-                  onclick="nextPage(lastVisible)">Next</button>
+                        onclick="nextPage(${lastVisible},products)">Next</button>
+                  </li>
+                </ul>
+              </nav>
+                `;
+                //Display limit products of relevant page
+              
+                for (let index = 0; index < products.length; index++){
+                    const p = products[index]
+                    if(!p) continue;
+                    glPageContent.innerHTML +=`
+                    <div id="${p.docId}" class="card" style="width: 18rem; display: inline-block">
+                    <img src="${p.image_url}" class="card-img-top" >
+                    <div class="card-body">
+                    <h5 class="card-title">ProductID: ${p.prodID}<br/>${p.name}</h5>
+                    <p class="card-text">${p.price}<br/>${p.summary}</p>
+                    
+                    <button class="btn btn-primary" type ="button"
+                        onclick="editProduct(${index})">Edit</button>
+        
+                    <button class="btn btn-danger" type ="button"
+                        onclick="deleteProduct(${index})">Delete</button>
+                  
+                    </div>
+                </div>
+                    
+                    `;
+             
+               
+                }
+                
+               
+                
+            });
+        }catch (e){
+            glPageContent.innerHTML='Forestore access error. Try again!!!!' + e
+            return
+        }
+
+    }
+
+    //PREV PAGE
+    //Dislay nextPage
+    async function prevPage(firstVisible,prevProducts)
+    {
+        
+        //console.log(prevProducts.length);
+        
+        console.log("last visible product ID(topNextPage)", lastVisible);
+        //Call firestore, display from previous last visible index
+        try{
+            products = []   //empty array of products
+            nextVisible = (prevProducts[(prevProducts.length) -1].prodID);
+           
+            console.log("counted lastVisible: " + lastVisible);
+            console.log("counted nextVisible: " + nextVisible);
+            
+            //Sorted by prodID
+            const snapshot = await firebase.firestore().collection(COLLECTION)
+                            .orderBy("prodID")                  //prodID starts from 1
+                            .limit(limitDisplay)  
+                            .startAt(nextVisible)            //Limit certain project/page
+                                      //Give query
+                            .get()
+            
+            .then(function(snapshot){
+                snapshot.forEach(doc =>{
+                    const{prodID,name,summary,price,image,image_url} = doc.data()
+                    const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                    products.push(p)    
+                });
+                
+                lastVisible=nextVisible+limitDisplay-1  
+                console.log("last visible product ID", lastVisible);
+
+                //Increase page# by 1 
+                pageNumber++;
+
+                //Erase previous page html content, display next page content
+                glPageContent.innerHTML=`
+                <h1>Show Products</h1>         
+                <a href='/home' class="btn btn-outline-primary">Home</a>
+                <a href='/add' class="btn btn-outline-primary">Add a Products</a>
+                <br/>
+                `;
+                glPageContent.innerHTML+=`Page: `+ pageNumber;       //Indicate which page user is currentl at
+
+                console.log("last visible product ID(2)", lastVisible);
+                glPageContent.innerHTML+=`
+                <nav aria-label="...">
+                <ul class="pagination">
+                  <li class="page-item">
+                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                    <!--
+                  </li>
+                  <li class="page-item"><a class="page-link" href="#">1</a></li>
+                  <li class="page-item">
+                    <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
+                  </li>
+                  <li class="page-item"><a class="page-link" href="#">3</a></li>
+                  <li>
+                  -->
+                  <button class="btn btn-danger" type ="button"
+                        onclick="nextPage(${lastVisible},products)">Next</button>
                   </li>
                 </ul>
               </nav>
