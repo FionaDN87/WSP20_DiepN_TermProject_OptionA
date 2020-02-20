@@ -311,7 +311,9 @@ async function deleteProduct(index){
                 <nav aria-label="...">
                 <ul class="pagination">
                   <li class="page-item">
-                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                  <button class="btn btn-danger" type ="button"
+                  onclick="nextPage(${lastVisible},products)">Previous</button>
+            </li>
                     <!--
                   </li>
                   <li class="page-item"><a class="page-link" href="#">1</a></li>
