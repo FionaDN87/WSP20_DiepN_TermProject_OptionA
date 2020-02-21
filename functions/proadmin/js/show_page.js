@@ -260,6 +260,8 @@ async function deleteProduct(index){
         }
     }
 let countNext=0;
+var totalProducts;
+var totalPage;
 //NEXT PAGE
     async function nextPage(lastVisible,prevProducts)
     {
@@ -305,35 +307,33 @@ let countNext=0;
                 countNext=0;
                 countPre=0;
             }
-           
-            //console.log("counted lastVisible: " + lastVisible);
-            //console.log("counted nextVisible: " + nextVisible);
-            
-            //Sorted by prodID
-            /*
-            const snapshot = await firebase.firestore().collection(COLLECTION)
-                            .orderBy("prodID")                  //prodID starts from 1
-                            .limit(limitDisplay)  
-                            .startAfter(nextVisible)            //Limit certain project/page
-                                      //Give query
-                            .get()
-            
-            .then(function(snapshot){
-                snapshot.forEach(doc =>{
-                    const{prodID,name,summary,price,image,image_url} = doc.data()
-                    const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
-                    products.push(p)    
-                });
-              */  
+
                 
                 lastVisible=products[products.length-1].prodID
 
-                //console.log("last visible product ID", lastVisible);
-                //console.log("Prev array 3: " + prevProducts.length);
+                 //-----
+                //COUNT TOTAL PRODUCTS IN DATABASE
+                totalProducts = []   //array of products
+                const snapshot = firebase.firestore().collection(COLLECTION)
+                .get()
+                .then(function(snapshot){
+                    snapshot.forEach(doc =>{
+                        const{prodID,name,summary,price,image,image_url} = doc.data()
+                        const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                        totalProducts.push(p)
+        
+                    }); 
+                    totalPage=Math.ceil((totalProducts.length)/3)
+                    console.log("Product Length (Next Page): "+ products.length)
+                    console.log("Total Page (Next Page): "+ totalPage)
+                    
+                //})
                 
                 //Increase page# by 1 
                 pageNumber++;
-               
+                //Erase previous page html content, display next page content
+                
+                glPageContent.innerHTML+=`Page: `+ pageNumber+ `/${totalPage}`;       //Indicate which page user is currentl at
                 //Erase previous page html content, display next page content
                 glPageContent.innerHTML=`
                 <h1>Show Products</h1>         
@@ -341,11 +341,31 @@ let countNext=0;
                 <a href='/add' class="btn btn-outline-primary">Add a Products</a>
                 <br/>
                 `;
-                glPageContent.innerHTML+=`Page: `+ pageNumber;       //Indicate which page user is currentl at
+                
 
-                console.log("last visible product ID(2)", lastVisible);
-                console.log("Prev array 4: " + prevProducts.length);
+                
+             
+                
+                //Last page, only displat PREVIOUS button
+                if(pageNumber===totalPage){
+                    
+                    glPageContent.innerHTML+=`Page: `+ pageNumber+ `/${totalPage}`;       //Indicate which page user is currentl at
+                    glPageContent.innerHTML+=`
+                    
+                    <nav aria-label="...">
+                    <ul class="pagination">   
+                    <button class="btn btn-danger" type ="button"
+                  onclick="prevPage(${firstPreVisible},products)">Previous</button>
+                      </li>
+                    </ul>
+                  </nav>
+                    `;
+                }else{
+                console.log(totalProducts.length)
+                console.log("Total Page:" + totalPage)
+                glPageContent.innerHTML+=`Page: `+ pageNumber+ `/${totalPage}`;       //Indicate which page user is currentl at
                 glPageContent.innerHTML+=`
+                
                 <nav aria-label="...">
                 <ul class="pagination">
                   <li class="page-item">
@@ -354,22 +374,15 @@ let countNext=0;
                   onclick="prevPage(${lastVisible},products)">Previous</button>
                   </button>
             </li>
-                    <!--
-                  </li>
-                  <li class="page-item"><a class="page-link" href="#">1</a></li>
-                  <li class="page-item">
-                    <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
-                  </li>
-                  <li class="page-item"><a class="page-link" href="#">3</a></li>
-                  <li>
-                  -->
+                    
                   <button class="btn btn-danger" type ="button"
                         onclick="nextPage(${lastVisible},products)">Next</button>
                   </li>
                 </ul>
               </nav>
               
-                `;
+                `;}
+           
                 //Display limit products of relevant page
               
                 for (let index = 0; index < products.length; index++){
@@ -394,11 +407,9 @@ let countNext=0;
                     `;
              
                
-                }
+                }    
                 
-               
-                
-          //  });
+            });
         }catch (e){
             glPageContent.innerHTML='Forestore access error. Try again!!!!' + e
             return
@@ -452,28 +463,11 @@ let countNext=0;
             countPre=0;
             countNext++;
             }
-            //Sorted by prodID
-            /*
-            const snapshot = await firebase.firestore().collection(COLLECTION)
-                            .orderBy("prodID","desc")                  //prodID starts from 1
-                            .limit(limitDisplay)  
-                            
-                            .startAfter(firstPreVisible)            //Limit certain project/page
-                                      //Give query
-                            .get()
-            
-            .then(function(snapshot){
-                snapshot.forEach(doc =>{
-                    const{prodID,name,summary,price,image,image_url} = doc.data()
-                    const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
-                    products.push(p)    
-                });
-*/
-               
+      
                 glPageContent.innerHTML=`
                 <h1>Show Products</h1>         
                 <a href='/home' class="btn btn-outline-primary">Home</a>
-                <a href='/add' class="btn btn-outline-primary">Add a Products</a>
+                <a href='/add' class="btn btn-outline-primary">Add a Product</a>
                 <br/>
                 `;
                 //Decrease page# by 1 
@@ -482,26 +476,11 @@ let countNext=0;
                 
                 //Erase previous page html content, display next page content
                 
-                glPageContent.innerHTML+=`Page: `+ pageNumber;       //Indicate which page user is currentl at
+                glPageContent.innerHTML+=`Page: `+ pageNumber+ `/${totalPage}`;       //Indicate which page user is currentl at
+               
                 
-                //COUNT TOTAL PRODUCTS IN DATABASE
-                //-----
-                totalProducts = []   //array of products
-                const snapshot = firebase.firestore().collection(COLLECTION)
-                .get()
-                .then(function(snapshot){
-                    snapshot.forEach(doc =>{
-                        const{prodID,name,summary,price,image,image_url} = doc.data()
-                        const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
-                        totalProducts.push(p)
-        
-                    }); 
-                })
-                //-----
-                let totalPage = totalProducts.length/3;
-                
-                
-                if(pageNumber==1){ //First Page, only display NEXT button
+                //First Page, only display NEXT button
+                if(pageNumber==1){ 
                     glPageContent.innerHTML+=`
                 <nav aria-label="...">
                 <ul class="pagination">   
