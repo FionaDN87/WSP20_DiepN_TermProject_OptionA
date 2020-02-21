@@ -274,6 +274,7 @@ var totalPage;
             //console.log("Prev array 2: " + prevProducts.length);
             products = []   //empty array of products
             if(countNext==0){
+            //TO DEFINE THE NEXT VISIBLE, USE PREPRODUCTS ARRAY
             nextVisible = (prevProducts[(prevProducts.length) -1].prodID);
                     const snapshot=await firebase.firestore().collection(COLLECTION)
                         .orderBy("prodID")
