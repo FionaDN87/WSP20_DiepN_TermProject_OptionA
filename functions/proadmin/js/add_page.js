@@ -3,11 +3,11 @@ function add_page(){
     //add_page_secured()
 }
 let glImageFile2Add; //File selected by imageButton
+ //Auto generate prodID for a new add-in product
 let randNumber = Math.floor(100000 + Math.random() * 900000);
 function add_page_secured(){
-    //-------------------------------------------------------------------------------------------
-    //Auto generate prodID for a new add-in product
-    //Count total products in firebase
+  //----
+  //CHECK TOTAL NUMBER OF PRODUCTS IN DATABASE
     var snapshot;
     var nextID;
     try{
@@ -15,8 +15,6 @@ function add_page_secured(){
     snapshot = firebase.firestore().collection(COLLECTION).get().then(snap => {
         size = snap.size // will return the collection size
 
-        //----
-        //CHECK TOTAL NUMBER OF PRODUCTS IN DATABASE
         products = []   //array of products
         const snapshot = firebase.firestore().collection(COLLECTION)
         .get()
@@ -28,23 +26,10 @@ function add_page_secured(){
 
             }); 
             console.log("Total products:" + products.length)
-             //MAKE SURE THE PRODUCTID IS UNIQUE
+         
         
-        nextID = size+1;
-        console.log("await 1....")   
-        var i=0;
-        for(var i=0;i<products.length;i++){
-            if(nextID==products[i].prodID) 
-                {
-                    console.log("id matched")
-                    nextID=nextID+1;
-                    console.log("New nextID: "+nextID)
-                }
-            //console.log(products[i].prodID)
-        }
-        console.log("await 2....") 
-        console.log(nextID)
-        
+        //nextID = products[products.length-1].prodID+1
+        nextID=randNumber;
         glPageContent.innerHTML = '<h1>Add Page</h1>'
         glPageContent.innerHTML+=`
         <div class = "form-group">
@@ -85,20 +70,14 @@ function add_page_secured(){
      });
         
     });
-
-       
-      
-        
-        
-       
+  
        
 }catch(e){
     glPageContent.innerHTML='Forestore access error. Try again!!!!' + e
             return
 
 }
-    
-    
+     
 }
 
 async function addProduct(nextID){

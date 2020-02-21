@@ -64,8 +64,7 @@ async function show_page_secured(){
         <nav aria-label="...">
         <ul class="pagination">
           <li class="page-item">
-          <button class="btn btn-danger" type ="button"
-          onclick="nextPage(lastVisible)">Previous</button>
+         
             <!--
           </li>
           <li class="page-item active"><a class="page-link" href="#">1</a></li>
@@ -260,27 +259,62 @@ async function deleteProduct(index){
             glPageContent.innerHTML = 'Delete Error: <br>' + JSON.stringify(e)
         }
     }
-
-//Dislay nextPage
+let countNext=0;
+//NEXT PAGE
     async function nextPage(lastVisible,prevProducts)
     {
+       
+        //console.log("Prev array: " + prevProducts.length);
         
-        //console.log(prevProducts.length);
-        
-        console.log("last visible product ID(topNextPage)", lastVisible);
+        //console.log("last visible product ID(topNextPage)", lastVisible);
         //Call firestore, display from previous last visible index
         try{
+            //console.log("Prev array 2: " + prevProducts.length);
             products = []   //empty array of products
+            if(countNext==0){
             nextVisible = (prevProducts[(prevProducts.length) -1].prodID);
+                    const snapshot=await firebase.firestore().collection(COLLECTION)
+                        .orderBy("prodID")
+                        .limit(limitDisplay)
+                        .startAfter(nextVisible).
+                        get()
+                        .then(function(snapshot){
+                        snapshot.forEach(doc => {
+                            const{prodID,name,summary,price,image,image_url} = doc.data()
+                    const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                    products.push(p)  
+                        })    
+                        })
+            
+            }
+            else{
+                nextVisible=prevProducts[0].prodID;
+                const snapshot=await firebase.firestore().collection(COLLECTION)
+                .orderBy("prodID")
+                .limit(limitDisplay)
+                .startAfter(nextVisible)
+                .get()
+                .then(function(snapshot){
+                snapshot.forEach(doc => {
+                    const{prodID,name,summary,price,image,image_url} = doc.data()
+            const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+            products.push(p)  
+
+                })    
+                })
+                countNext=0;
+                countPre=0;
+            }
            
-            console.log("counted lastVisible: " + lastVisible);
-            console.log("counted nextVisible: " + nextVisible);
+            //console.log("counted lastVisible: " + lastVisible);
+            //console.log("counted nextVisible: " + nextVisible);
             
             //Sorted by prodID
+            /*
             const snapshot = await firebase.firestore().collection(COLLECTION)
                             .orderBy("prodID")                  //prodID starts from 1
                             .limit(limitDisplay)  
-                            .startAt(nextVisible)            //Limit certain project/page
+                            .startAfter(nextVisible)            //Limit certain project/page
                                       //Give query
                             .get()
             
@@ -290,13 +324,16 @@ async function deleteProduct(index){
                     const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
                     products.push(p)    
                 });
+              */  
                 
-                lastVisible=nextVisible+limitDisplay-1  
-                console.log("last visible product ID", lastVisible);
+                lastVisible=products[products.length-1].prodID
 
+                //console.log("last visible product ID", lastVisible);
+                //console.log("Prev array 3: " + prevProducts.length);
+                
                 //Increase page# by 1 
                 pageNumber++;
-
+               
                 //Erase previous page html content, display next page content
                 glPageContent.innerHTML=`
                 <h1>Show Products</h1>         
@@ -307,12 +344,15 @@ async function deleteProduct(index){
                 glPageContent.innerHTML+=`Page: `+ pageNumber;       //Indicate which page user is currentl at
 
                 console.log("last visible product ID(2)", lastVisible);
+                console.log("Prev array 4: " + prevProducts.length);
                 glPageContent.innerHTML+=`
                 <nav aria-label="...">
                 <ul class="pagination">
                   <li class="page-item">
+                  
                   <button class="btn btn-danger" type ="button"
-                  onclick="nextPage(${lastVisible},products)">Previous</button>
+                  onclick="prevPage(${lastVisible},products)">Previous</button>
+                  </button>
             </li>
                     <!--
                   </li>
@@ -328,10 +368,170 @@ async function deleteProduct(index){
                   </li>
                 </ul>
               </nav>
+              
                 `;
                 //Display limit products of relevant page
               
                 for (let index = 0; index < products.length; index++){
+                    const p = products[index]
+                    if(!p) continue;
+                    glPageContent.innerHTML +=`
+                    <div id="${p.docId}" class="card" style="width: 18rem; display: inline-block">
+                    <img src="${p.image_url}" class="card-img-top" >
+                    <div class="card-body">
+                    <h5 class="card-title">ProductID: ${p.prodID}<br/>${p.name}</h5>
+                    <p class="card-text">${p.price}<br/>${p.summary}</p>
+                    
+                    <button class="btn btn-primary" type ="button"
+                        onclick="editProduct(${index})">Edit</button>
+        
+                    <button class="btn btn-danger" type ="button"
+                        onclick="deleteProduct(${index})">Delete</button>
+                  
+                    </div>
+                </div>
+                   
+                    `;
+             
+               
+                }
+                
+               
+                
+          //  });
+        }catch (e){
+            glPageContent.innerHTML='Forestore access error. Try again!!!!' + e
+            return
+        }
+
+    }
+    //Global variables
+   let countPre =0;
+   let firstPreVisible
+    //PREV PAGE
+    async function prevPage(lastVisible,curProducts)
+    {
+        countNext++;
+        //console.log(curProducts.length);
+    
+        //Call firestore, display from previous last visible index
+        try{
+            products = []   //empty array of products
+            
+            if(countPre==0)            //First time using Previous Button
+                { firstPreVisible = (curProducts[0].prodID);
+                    const snapshot=await firebase.firestore().collection(COLLECTION)
+                    .orderBy("prodID","desc")
+                    .limit(limitDisplay)
+                    .startAfter(firstPreVisible).
+                    get()
+                    .then(function(snapshot){
+                    snapshot.forEach(doc => {
+                        const{prodID,name,summary,price,image,image_url} = doc.data()
+                const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                products.push(p)  
+                    })    
+                    })
+                countNext++;
+                }
+                else{               //NOT First time using Previous Button
+                firstPreVisible=curProducts[curProducts.length-1].prodID
+            
+                    const snapshot=await firebase.firestore().collection(COLLECTION)
+                    .orderBy("prodID","desc")
+                    .limit(limitDisplay)
+                    .startAfter(firstPreVisible).
+                    get()
+                    .then(function(snapshot){
+                    snapshot.forEach(doc => {
+                        const{prodID,name,summary,price,image,image_url} = doc.data()
+                const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                products.push(p)  
+                    })    
+                    })
+            countPre=0;
+            countNext++;
+            }
+            //Sorted by prodID
+            /*
+            const snapshot = await firebase.firestore().collection(COLLECTION)
+                            .orderBy("prodID","desc")                  //prodID starts from 1
+                            .limit(limitDisplay)  
+                            
+                            .startAfter(firstPreVisible)            //Limit certain project/page
+                                      //Give query
+                            .get()
+            
+            .then(function(snapshot){
+                snapshot.forEach(doc =>{
+                    const{prodID,name,summary,price,image,image_url} = doc.data()
+                    const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                    products.push(p)    
+                });
+*/
+               
+                glPageContent.innerHTML=`
+                <h1>Show Products</h1>         
+                <a href='/home' class="btn btn-outline-primary">Home</a>
+                <a href='/add' class="btn btn-outline-primary">Add a Products</a>
+                <br/>
+                `;
+                //Decrease page# by 1 
+                pageNumber--;
+                countPre++;   //Increase count after first time using Previous Button
+                
+                //Erase previous page html content, display next page content
+                
+                glPageContent.innerHTML+=`Page: `+ pageNumber;       //Indicate which page user is currentl at
+                
+                //COUNT TOTAL PRODUCTS IN DATABASE
+                //-----
+                totalProducts = []   //array of products
+                const snapshot = firebase.firestore().collection(COLLECTION)
+                .get()
+                .then(function(snapshot){
+                    snapshot.forEach(doc =>{
+                        const{prodID,name,summary,price,image,image_url} = doc.data()
+                        const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                        totalProducts.push(p)
+        
+                    }); 
+                })
+                //-----
+                let totalPage = totalProducts.length/3;
+                
+                
+                if(pageNumber==1){ //First Page, only display NEXT button
+                    glPageContent.innerHTML+=`
+                <nav aria-label="...">
+                <ul class="pagination">   
+                  <button class="btn btn-danger" type ="button"
+                        onclick="nextPage(${firstPreVisible},products)">Next</button>
+                  </li>
+                </ul>
+              </nav>
+                `;
+                }else{
+
+                //console.log("last visible product ID(2)", lastVisible);
+                glPageContent.innerHTML+=`
+                <nav aria-label="...">
+                <ul class="pagination">
+                  <li class="page-item">
+                  <button class="btn btn-danger" type ="button"
+                  onclick="prevPage(${firstPreVisible},products)">Previous</button>
+                </li>
+                    
+                  <button class="btn btn-danger" type ="button"
+                        onclick="nextPage(${firstPreVisible},products)">Next</button>
+                  </li>
+                </ul>
+              </nav>
+                `;
+                }
+                //Display limit products of relevant page
+                //Since Prev button display decs array
+                for (let index = products.length; index >= 0; index--){
                     const p = products[index]
                     if(!p) continue;
                     glPageContent.innerHTML +=`
@@ -357,7 +557,7 @@ async function deleteProduct(index){
                 
                
                 
-            });
+           // });
         }catch (e){
             glPageContent.innerHTML='Forestore access error. Try again!!!!' + e
             return
