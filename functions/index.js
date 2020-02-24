@@ -2,13 +2,19 @@ const functions = require('firebase-functions');
 
 const express = require('express')
 
+const path = require('path')
+
 const app = express()
+
+
 
 exports.httpReq = functions.https.onRequest(app)
 
 //Use middleware express for POST method
 app.use(express.urlencoded({extended:false}))
 
+//For insert images
+app.use('/public',express.static(path.join(__dirname , '/static')))
 
 //Frontend code
 
