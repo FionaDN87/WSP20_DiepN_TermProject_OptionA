@@ -16,6 +16,12 @@ app.use(express.urlencoded({extended:false}))
 //For insert images
 app.use('/public',express.static(path.join(__dirname , '/static')))
 
+//SET TEMPLACE ENGINE
+app.set('view engine','ejs')
+//LOCATION OF EJS
+app.set('views','./ejsviews')
+
+
 //Frontend code
 
 function frontendHandler(req,res){
@@ -47,10 +53,16 @@ app.post('/testsignIn',(req,res)=>{
     //Read data from input
     const email=req.body.email
     const password=req.body.pass
-    let page =`
-    {POST} You entered: ${email} and ${password}
-    `;
-    res.send(page)   //send String to testsignIn
+    //let page =`
+    //{POST} You entered: ${email} and ${password}
+    //`;
+    //res.send(page)   //send String to testsignIn
+    const obj = {
+        a: email,
+        b: password,
+        c: 'login success'
+    }
+    res.render('home', obj)
 })
 
 app.get('/testsignIn',(req,res)=>{
