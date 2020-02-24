@@ -24,3 +24,18 @@ app.get('/',(req,res)=>{
     console.log('====================')
     res.send('<h1>My Store (from backend)_DiepNguyen</h1>')
 })
+
+//Client connect to /test
+app.get('/test',(req,res)=>{
+    const time = new Date().toString()   //Server side => Serve time is read
+    let page =`
+    <h1>Current time at Server: ${time}</h1>
+    `;
+    res.header('refresh',1)   //Connect client again in 1 second => client connects to server every second
+    res.send(page)
+})
+
+//Client connect to /test2
+app.get('/test2',(req,res)=>{
+    res.redirect('http://www.uco.edu')  //Forwarding to another website
+})
