@@ -25,6 +25,24 @@ app.get('/',(req,res)=>{
     res.send('<h1>My Store (from backend)_DiepNguyen</h1>')
 })
 
+//TEST CODE
+app.get('/testlogin',(req,res)=>{
+    //res.sendFile(path.join(__dirname, '/static/html/login.html'))  //This does not work
+    res.sendFile(__dirname + '/static/html/login.html')
+})
+
+app.get('/testsignIn',(req,res)=>{
+    //Read data from input
+    const email=req.query.email
+    const password=req.query.pass
+    let page =`
+    You entered: ${email} and ${password}
+    `;
+    res.send(page)   //send String to testsignIn
+})
+
+
+
 //Client connect to /test
 app.get('/test',(req,res)=>{
     const time = new Date().toString()   //Server side => Serve time is read
