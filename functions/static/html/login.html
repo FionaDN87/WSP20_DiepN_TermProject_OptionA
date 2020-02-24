@@ -1,6 +1,9 @@
 <html>
     <body>
-        <form action="/testsignIn">
+        <!--Using POST method to read data from input and send to anothr page
+        GET method is unsecure since input will be displayed on url
+        -->
+        <form action="/testsignIn" method="POST">
         Email: <input type="text" name="email"><br>
         Password: <input type="password" name="pass"><br>
         <button type="submit">Login</button>

@@ -6,6 +6,10 @@ const app = express()
 
 exports.httpReq = functions.https.onRequest(app)
 
+//Use middleware express for POST method
+app.use(express.urlencoded({extended:false}))
+
+
 //Frontend code
 
 function frontendHandler(req,res){
@@ -26,9 +30,21 @@ app.get('/',(req,res)=>{
 })
 
 //TEST CODE
+//REMEMBER: APP.GET HANDLES GET METHOD ONLY
 app.get('/testlogin',(req,res)=>{
     //res.sendFile(path.join(__dirname, '/static/html/login.html'))  //This does not work
     res.sendFile(__dirname + '/static/html/login.html')
+})
+
+//APP.POST IS USED FOR POST METHOD
+app.post('/testsignIn',(req,res)=>{
+    //Read data from input
+    const email=req.body.email
+    const password=req.body.pass
+    let page =`
+    {POST} You entered: ${email} and ${password}
+    `;
+    res.send(page)   //send String to testsignIn
 })
 
 app.get('/testsignIn',(req,res)=>{
