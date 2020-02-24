@@ -48,6 +48,8 @@ const firebaseConfig = {
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
 
+  //Define variable
+  const Constants = require('./myconstants.js')
 
 
 
