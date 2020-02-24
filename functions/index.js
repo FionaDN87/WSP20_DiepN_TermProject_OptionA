@@ -49,16 +49,24 @@ const firebaseConfig = {
   firebase.initializeApp(firebaseConfig);
 
   //Define variable
-  const Constants = require('./myconstants.js')
+  const Constants = require('./myconstant.js')
 
+app.get('/',async (req,res)=>{
+   
+   const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+   try{
+       let products = []
+       const snapshot = await coll.orderBy("name").get()
+       snapshot.forEach(doc =>{
+           products.push({id: doc.id, data:doc.data()})
+       })
+       //Display on web browser
+       res.send(JSON.stringify(products))
 
+   }catch(e){
+       res.send(JSON.stringify(e))
 
-
-app.get('/',(req,res)=>{
-    console.log('====================')
-    console.log(req.headers)
-    console.log('====================')
-    res.send('<h1>My Store (from backend)_DiepNguyen</h1>')
+   }
 })
 
 //TEST CODE
