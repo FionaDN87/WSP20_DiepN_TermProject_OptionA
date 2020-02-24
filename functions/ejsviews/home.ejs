@@ -4,6 +4,11 @@
         You entered: <br>
         Email: <%= a %><br>
         Password: <%= b %><br>
-        <%= c %>
+        <%= c %><br>    <!-- "=" is used for text data-->
+        <%- d %>        <!-- "-" is used for html data-->
+
+        <% for (let i  = start; i < end; i++){ %>
+            <ui><li>Hello <%= i%> </li></ui> <br>
+        <%}%>
     </body>
 </html>

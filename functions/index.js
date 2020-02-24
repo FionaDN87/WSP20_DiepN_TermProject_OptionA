@@ -34,6 +34,24 @@ app.get('/add',frontendHandler);
 app.get('/show',frontendHandler);
 
 //Backend code
+const firebase = require('firebase')
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyB48iPuYcKGZC8YYJ9tyrzKINCSEPcamDY",
+    authDomain: "diepn-wsp20.firebaseapp.com",
+    databaseURL: "https://diepn-wsp20.firebaseio.com",
+    projectId: "diepn-wsp20",
+    storageBucket: "diepn-wsp20.appspot.com",
+    messagingSenderId: "81923847157",
+    appId: "1:81923847157:web:8c9f8c8b15764cac3526bc"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+
+
+
+
 app.get('/',(req,res)=>{
     console.log('====================')
     console.log(req.headers)
@@ -60,7 +78,10 @@ app.post('/testsignIn',(req,res)=>{
     const obj = {
         a: email,
         b: password,
-        c: 'login success'
+        c: '<h1>login success</h1>',
+        d: '<h1>login success</h1>',
+        start: 1,
+        end: 10,
     }
     res.render('home', obj)
 })
