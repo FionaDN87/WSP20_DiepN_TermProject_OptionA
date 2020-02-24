@@ -62,10 +62,10 @@ app.get('/',async (req,res)=>{
        })
        //Display on web browser
             //res.send(JSON.stringify(products))
-            res.render('storefront.ejs', {products})
+            res.render('storefront.ejs', {error: false, products})
    }catch(e){
-       res.send(JSON.stringify(e))
-
+       //res.send(JSON.stringify(e))
+        res.render('storefront.ejs',{error: e})  //if error trus, give error message
    }
 })
 
