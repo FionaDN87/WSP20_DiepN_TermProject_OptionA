@@ -61,8 +61,8 @@ app.get('/',async (req,res)=>{
            products.push({id: doc.id, data:doc.data()})
        })
        //Display on web browser
-       res.send(JSON.stringify(products))
-
+            //res.send(JSON.stringify(products))
+            res.render('storefront.ejs', {products})
    }catch(e){
        res.send(JSON.stringify(e))
 
