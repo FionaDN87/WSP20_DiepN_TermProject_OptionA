@@ -11,7 +11,7 @@
   </head>
   <body>
       <!--USING PARTIALS TO AVOID CODE REPETITION-->
-    <%- include('partials/nav.ejs', {page:'signin'})%>
+    <%- include('partials/nav.ejs', {page:'signin',user})%>
 
     <!--Error handling-->
     <% if(error) { %>

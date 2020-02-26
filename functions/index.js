@@ -51,7 +51,7 @@ const firebaseConfig = {
   //Define variable
   const Constants = require('./myconstant.js')
 
-app.get('/',async (req,res)=>{
+app.get('/',auth,async (req,res)=>{
    
    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
    try{
@@ -62,23 +62,23 @@ app.get('/',async (req,res)=>{
        })
        //Display on web browser
             //res.send(JSON.stringify(products))
-            res.render('storefront.ejs', {error: false, products})
+            res.render('storefront.ejs', {error: false, products,user:req.user})
    }catch(e){
        //res.send(JSON.stringify(e))
-        res.render('storefront.ejs',{error: e})  //if error trus, give error message
+        res.render('storefront.ejs',{error: e,user:req.user})  //if error trus, give error message
    }
 })
 
-app.get('/b/about',(req,res)=>{
-    res.render('about.ejs')
+app.get('/b/about',auth,(req,res)=>{
+    res.render('about.ejs',{user:req.user})
 })
 
-app.get('/b/contact',(req,res)=>{
-    res.render('contact.ejs')
+app.get('/b/contact',auth,(req,res)=>{
+    res.render('contact.ejs',{user:req.user})
 })
 
 app.get('/b/signin',(req,res)=>{
-    res.render('signin.ejs',{error: false})
+    res.render('signin.ejs',{error: false,user:req.user})
 })
 
 app.post('/b/signin', async (req,res)=>{
@@ -89,10 +89,25 @@ app.post('/b/signin', async (req,res)=>{
         const user = await auth.signInWithEmailAndPassword(email,password)
         res.redirect('/')
     }catch(e){
-        res.render('signin',{error:e})
+        res.render('signin',{error:e,user:req.user})
     }
 })
 
+
+app.get('/b/signout', async (req,res)=>{
+    try{
+        await firebase.auth().signOut()
+        res.redirect('/')
+    }catch(e){
+        res.send('ERROR: sign out!!!')
+    }
+})
+
+//MIDDLEWARE
+function auth(req,res,next){
+    req.user = firebase.auth().currentUser
+    next()
+}
 
 //TEST CODE
 //REMEMBER: APP.GET HANDLES GET METHOD ONLY
