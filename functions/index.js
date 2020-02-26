@@ -78,8 +78,21 @@ app.get('/b/contact',(req,res)=>{
 })
 
 app.get('/b/signin',(req,res)=>{
-    res.render('signin.ejs')
+    res.render('signin.ejs',{error: false})
 })
+
+app.post('/b/signin', async (req,res)=>{
+    const email = req.body.email
+    const password = req.body.password
+    const auth = firebase.auth()
+    try{
+        const user = await auth.signInWithEmailAndPassword(email,password)
+        res.redirect('/')
+    }catch(e){
+        res.render('signin',{error:e})
+    }
+})
+
 
 //TEST CODE
 //REMEMBER: APP.GET HANDLES GET METHOD ONLY

@@ -12,7 +12,19 @@
   <body>
       <!--USING PARTIALS TO AVOID CODE REPETITION-->
     <%- include('partials/nav.ejs', {page:'signin'})%>
-    <h1>Sign In</h1>
+
+    <!--Error handling-->
+    <% if(error) { %>
+        <p style="color:red;"><%=error %></p>
+    <% } %>
+
+    <form class="form-signin" action="/b/signin" method="post" >
+            
+        <h3>Please Sign In </h3>
+        <input type="email" class="form-control" name="email" placeholder = "Email address">
+        <input type="password" class="form-control" name="password" placeholder = "Password">
+        <button type="submit" class="btn btn-primary">Sign In</button>
+     </form>
 
 <%- include('partials/scripts.ejs') %>
   </body>
