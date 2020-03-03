@@ -16,7 +16,7 @@ app.use(express.urlencoded({extended:false}))
 //For insert images
 app.use('/public',express.static(path.join(__dirname , '/static')))
 
-//SET TEMPLACE ENGINE
+//SET TEMPLATE ENGINE
 app.set('view engine','ejs')
 //LOCATION OF EJS
 app.set('views','./ejsviews')
