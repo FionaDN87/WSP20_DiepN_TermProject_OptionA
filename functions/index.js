@@ -111,6 +111,14 @@ app.get('/b/profile',auth, (req,res)=>{
    }
 })
 
+app.get('/b/cart',auth, (req,res)=>{
+    if(!req.user) {   //if not signin, direct to signin page
+         res.redirect('/b/signin')
+    } else {
+        res.render('cart',{user: req.user})
+    }
+ })
+
 //MIDDLEWARE
 function auth(req,res,next){
     req.user = firebase.auth().currentUser
