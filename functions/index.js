@@ -119,6 +119,95 @@ app.get('/b/cart',auth, (req,res)=>{
     }
  })
 
+ //CREATIVITY------------------------------------------------------
+ app.get('/b/products',auth, async (req,res)=>{
+    if(!req.user) {   //if not signin, direct to signin page
+         res.redirect('/b/signin')
+    } else {
+
+    //Retrieve specific item from products-------
+    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+                            //.where('cat'), isEqualTo: 'products'
+                            .where("cat", "==","products")
+
+    try{
+        let products = []
+        const snapshot = await coll.get()
+        snapshot.forEach(doc =>{
+            products.push({id: doc.id, data:doc.data()})
+        })
+        //Display on web browser
+             //res.send(JSON.stringify(products))
+             res.render('products.ejs', {error: false, products,user:req.user})
+    }catch(e){
+        //res.send(JSON.stringify(e))
+         res.render('products.ejs',{error: e,user:req.user})  //if error trus, give error message
+    }
+    //--------------------------------------------
+
+    }
+
+
+ })
+
+ app.get('/b/patterns',auth,async (req,res)=>{
+    if(!req.user) {   //if not signin, direct to signin page
+        res.redirect('/b/signin')
+   } else {
+
+   //Retrieve specific item from products-------
+   const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+                           //.where('cat'), isEqualTo: 'products'
+                           .where("cat", "==","patterns")
+
+   try{
+       let patterns = []
+       const snapshot = await coll.get()
+       snapshot.forEach(doc =>{
+           patterns.push({id: doc.id, data:doc.data()})
+       })
+       //Display on web browser
+            //res.send(JSON.stringify(products))
+            res.render('patterns.ejs', {error: false, patterns,user:req.user})
+   }catch(e){
+       //res.send(JSON.stringify(e))
+        res.render('patterns.ejs',{error: e,user:req.user})  //if error trus, give error message
+   }
+   //--------------------------------------------
+
+   }
+ })
+
+ app.get('/b/portraits',auth, async (req,res)=>{
+    if(!req.user) {   //if not signin, direct to signin page
+        res.redirect('/b/signin')
+   } else {
+
+   //Retrieve specific item from products-------
+   const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+                           //.where('cat'), isEqualTo: 'products'
+                           .where("cat", "==","portraits")
+
+   try{
+       let portraits = []
+       const snapshot = await coll.get()
+       snapshot.forEach(doc =>{
+           portraits.push({id: doc.id, data:doc.data()})
+       })
+       //Display on web browser
+            //res.send(JSON.stringify(products))
+            res.render('portraits.ejs', {error: false, portraits,user:req.user})
+   }catch(e){
+       //res.send(JSON.stringify(e))
+        res.render('portraits.ejs',{error: e,user:req.user})  //if error trus, give error message
+   }
+   //--------------------------------------------
+
+   }
+ })
+ //CREATIVITY------------------------------------------------------
+
+
 //MIDDLEWARE
 function auth(req,res,next){
     req.user = firebase.auth().currentUser

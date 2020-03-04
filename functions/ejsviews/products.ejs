@@ -7,13 +7,13 @@
 
     <%- include('partials/header.ejs') %>
 
-    <title>Store Front</title>
+    <title>Products</title>
   </head>
   <body>
       <!--USING PARTIALS TO AVOID CODE REPETITION-->
-    <%- include('partials/nav.ejs',{page:'storefront',user})%>
-    <h1>My Store</h1>
-
+    <%- include('partials/nav.ejs',{page:'cart',user})%>
+    <h1>Products</h1>
+ 
 <!--Error handling-->
 
 <% if (error){ %>
@@ -32,6 +32,7 @@
           </div>
     <% } %>
 <% } %>   <!--else part-->
+
 
 <%- include('partials/scripts.ejs') %>
   </body>

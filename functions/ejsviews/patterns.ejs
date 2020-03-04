@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <%- include('partials/header.ejs') %>
+
+    <title>Patterns</title>
+  </head>
+  <body>
+      <!--USING PARTIALS TO AVOID CODE REPETITION-->
+    <%- include('partials/nav.ejs',{page:'cart',user})%>
+    <h1>Patterns</h1>
+    <!--Error handling-->
+
+<% if (error){ %>
+  <p style="color:red"><%= JSON.stringify(error) %></p>
+<%} else { %>
+  <!--DISPLAY PRODUCTS USING LOOP-->
+  <% for (let p of patterns){ %>
+      <div class="card" style="width: 18rem; display: inline-block">
+          <img src="<%= p.data.image_url %>" class="card-img-top">
+          <div class="card-body">
+            <h5 class="card-title"><%= p.data.name %><br> {Category: <%= p.data.cat %>}</h5>
+            <p class="card-text">$(<%= p.data.price%>)<br> <%= p.data.summary %></p>
+            <a href="#" class="btn btn-primary">Buy</a>
+            <a href="/b/cart"" class="btn btn-primary">Cart</a>
+          </div>
+        </div>
+  <% } %>
+<% } %>   <!--else part-->
+
+<%- include('partials/scripts.ejs') %>
+  </body>
+</html>

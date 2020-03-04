@@ -15,7 +15,8 @@
         </li>
         <li class="nav-item <%= page === 'profile' ? 'active' :'' %>">
             <a class="nav-link" href="/b/profile">Profile</a>
-          </li>
+        </li>
+        
         <% if(!user) { %>
             <li class="nav-item <%= page === 'signin' ? 'active' :'' %>">
                 <a class="nav-link" href="/b/signin">Sign In</a>
@@ -25,6 +26,19 @@
                 <a class="nav-link" href="/b/signout">Sign Out</a>
             </li>
             <% } %>
+            <!--DROP DOWN MENU-->
+            <div class="dropdown">
+              <button style= "background-color:green; border-color: pink" class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Product Catergory
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="/b/products">Products</a>
+                <a class="dropdown-item" href="/b/patterns">Patterns</a>
+                <a class="dropdown-item" href="/b/portraits">Portraits</a>
+              </div>
+            </div>
+             <!--DROP DOWN MENU-->
       </ul>
+      
     </div>
   </nav>
