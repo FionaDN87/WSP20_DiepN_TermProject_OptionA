@@ -221,6 +221,14 @@ function auth(req,res,next){
     next()
 }
 
+const adminUtil = require('./adminUtil.js')
+//ADMIN API
+app.post('/admin/signup',(req,res)=>{
+    return adminUtil.createUser(req,res)
+})
+
+
+
 //TEST CODE
 //REMEMBER: APP.GET HANDLES GET METHOD ONLY
 app.get('/testlogin',(req,res)=>{
