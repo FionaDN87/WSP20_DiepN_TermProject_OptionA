@@ -208,6 +208,13 @@ app.get('/b/cart',auth, (req,res)=>{
  //CREATIVITY------------------------------------------------------
 
 
+
+app.get('/b/signup',(req,res)=>{
+    res.render('signup.ejs',{page:'signup',user: null, error: false})
+})
+
+
+
 //MIDDLEWARE
 function auth(req,res,next){
     req.user = firebase.auth().currentUser
