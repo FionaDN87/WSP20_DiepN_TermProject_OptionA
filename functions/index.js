@@ -34,6 +34,15 @@ app.get('/add',frontendHandler);
 app.get('/show',frontendHandler);
 
 //Backend code
+const session = require('express-session')
+app.use(session(
+    {
+        secret: 'anysecrestring.fjkdlsaj!!!',
+        saveUninitialized: false,
+        resave: false
+    }
+))
+
 const firebase = require('firebase')
 // Your web app's Firebase configuration
 const firebaseConfig = {
