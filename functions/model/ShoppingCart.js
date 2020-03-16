@@ -17,7 +17,7 @@ class ShoppingCart{
 
     //ADD PRODUCT TO SHOPPING CART
     add(product) {
-        let found = false,
+        let found = false
         for(const item of this.contents){
             if (item.product.id === product.id){
                 found = true;

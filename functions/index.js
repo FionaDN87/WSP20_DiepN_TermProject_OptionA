@@ -232,7 +232,7 @@ app.get('/b/signup',(req,res)=>{
 
 
 const ShoppingCart = require('./model/ShoppingCart.js')
-app.post('/b/add2cart', (req,res)=>{
+app.post('/b/add2cart', async (req,res)=>{
     const id = req.body.docID
     const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
     try{
@@ -241,7 +241,7 @@ app.post('/b/add2cart', (req,res)=>{
         let cart;
         if(!req.session.cart){
             // first time add to cart
-            //Create ne shopping cart object
+            //Create new shopping cart object
             cart = new ShoppingCart()
         }else {
             cart = ShoppingCart.deserialize(req.session.cart)
@@ -254,8 +254,18 @@ app.post('/b/add2cart', (req,res)=>{
         //Redirect to backend
         res.redirect('/b/shoppingcart')
     }catch(e){
-
+        res.send(JSON.stringify)
     }
+})
+
+app.get('/b/shoppingcart', (req, res)=> {
+    let cart
+    if(!req.session.cart){
+        cart = new ShoppingCart()
+    } else {
+        cart = ShoppingCart.deserialize(req.session.cart)
+    }
+    res.send(JSON.stringify(cart.contents))
 })
 
 
