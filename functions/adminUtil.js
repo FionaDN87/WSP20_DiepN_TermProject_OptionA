@@ -15,17 +15,27 @@ async function createUser (req,res) {
     const displayName  = req.body.displayName
     const phoneNumber = req.body.phoneNumber
     const photoURL = req.body.photoURL
-
     try{
         await admin.auth().createUser (
             {email,password,displayName,phoneNumber,photoURL}
         )
-    res.send('Create!')
+    res.render('signin.ejs',{page: 'signin', user: false, error:'Account created: Sign In Please! '})
     }catch (e){
-        res.send(JSON.stringify(e))
+    res.render('signup.ejs',{error: e, user: false, page:'signup'})
+    }
+}
+async function listUsers(req,res){
+    //call admin auth function
+    try{
+        const userRecord = await admin.auth().listUsers()
+        res.render('admin/listUsers.ejs',{users: userRecord.users})
+    }catch(e){
+        res.send(JSON.stringify)
+
     }
 }
 module.exports = {
-    createUser
+    createUser,
+    listUsers,
 }   //Export an object
 

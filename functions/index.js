@@ -86,7 +86,15 @@ app.post('/b/signin', async (req,res)=>{
     const password = req.body.password
     const auth = firebase.auth()
     try{
-        const user = await auth.signInWithEmailAndPassword(email,password)
+        const userRecord = await auth.signInWithEmailAndPassword(email,password)
+        if(userRecord.user.email === Constants.SYSADMINEMAIL) {
+            //If userRecord is sysadmind email
+            //Direct to system admin page
+            res.redirect('/admin/sysadmin')
+        }else{
+            //Direct to regular page
+            res.redirect('/')
+        }
         res.redirect('/')
     }catch(e){
         res.render('signin',{error:e,user:req.user})
@@ -226,6 +234,23 @@ const adminUtil = require('./adminUtil.js')
 app.post('/admin/signup',(req,res)=>{
     return adminUtil.createUser(req,res)
 })
+
+app.get('/admin/sysadmin',authSysAdmin,(req,res)=>{
+    res.render('admin/sysadmin.ejs')
+})
+app.get('/admin/listUsers',authSysAdmin,(req,res)=>{
+    //Get all users from DB
+    return adminUtil.listUsers(req,res)
+})
+
+function authSysAdmin(req,res,next){
+    const user = firebase.auth().currentUser
+    if(!user || !user.email || user.email !== Constants.SYSADMINEMAIL){
+        res.send('<h1>System Admin Page: Access Denied!!!</h1>')
+    } else {
+        next()
+    }
+}
 
 
 
