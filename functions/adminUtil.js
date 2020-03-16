@@ -28,9 +28,10 @@ async function listUsers(req,res){
     //call admin auth function
     try{
         const userRecord = await admin.auth().listUsers()
-        res.render('admin/listUsers.ejs',{users: userRecord.users})
+        res.render('admin/listUsers.ejs',{users: userRecord.users, error: false})
     }catch(e){
-        res.send(JSON.stringify)
+        //res.send(JSON.stringify)   //test
+        res.render('admin/listUsers.ejs', {users: false, error: e})
 
     }
 }
