@@ -231,6 +231,33 @@ app.get('/b/signup',(req,res)=>{
 })
 
 
+const ShoppingCart = require('./model/ShoppingCart.js')
+app.post('/b/add2cart', (req,res)=>{
+    const id = req.body.docID
+    const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    try{
+        const doc = await collection.doc(id).get()
+        //Store product ID into shopping cart
+        let cart;
+        if(!req.session.cart){
+            // first time add to cart
+            //Create ne shopping cart object
+            cart = new ShoppingCart()
+        }else {
+            cart = ShoppingCart.deserialize(req.session.cart)
+        }
+        const {name,price,summary,image,image_url} = doc.data()
+        cart.add({id, name, price, summary, image, image_url})
+
+        //update shopping cart into session
+        req.session.cart = cart.serialize()
+        //Redirect to backend
+        res.redirect('/b/shoppingcart')
+    }catch(e){
+
+    }
+})
+
 
 //MIDDLEWARE
 function auth(req,res,next){

@@ -39,4 +39,17 @@ class ShoppingCart{
             }
             return sum;
         }
+
+    serialize(){
+        return this.contents
+    }
+    
+
+    //obj = ShoppingCart.deserialize(serial_data)
+    static deserialize(sdata){
+        const cart = new ShoppingCart()
+        cart.contents = sdata
+        return cart
+    }
 }
+module.exports = ShoppingCart
