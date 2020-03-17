@@ -265,7 +265,8 @@ app.get('/b/shoppingcart', (req, res)=> {
     } else {
         cart = ShoppingCart.deserialize(req.session.cart)
     }
-    res.send(JSON.stringify(cart.contents))
+    //passing cart into shoppingcart.ejs
+    res.render('shoppingcart.ejs',{cart, user: false})
 })
 
 
