@@ -31,7 +31,7 @@
             <th scope="row"><img width = 50 height = 50 src = "<%= cart.contents[i].product.image_url %>"></th>
             <td><%= cart.contents[i].product.name %></td>
             <td><%= cart.contents[i].product.price.toFixed(2) %></td>
-            <td><%= cart.contents[i].product.qty %></td>
+            <td><%= cart.contents[i].qty %></td>
             <td><%= cart.contents[i].product.summary %></td>
           </tr>
          <% } %>
