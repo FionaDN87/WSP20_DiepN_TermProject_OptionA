@@ -232,7 +232,7 @@ app.get('/b/signup',(req,res)=>{
 
 
 const ShoppingCart = require('./model/ShoppingCart.js')
-app.post('/b/add2cart', async (req,res)=>{
+app.post('/b/add2cart',authAndRedirectSignIn, async (req,res)=>{
     const id = req.body.docID
     const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
     try{
@@ -258,7 +258,7 @@ app.post('/b/add2cart', async (req,res)=>{
     }
 })
 
-app.get('/b/shoppingcart', (req, res)=> {
+app.get('/b/shoppingcart',authAndRedirectSignIn, (req, res)=> {
     let cart
     if(!req.session.cart){
         cart = new ShoppingCart()
@@ -266,11 +266,22 @@ app.get('/b/shoppingcart', (req, res)=> {
         cart = ShoppingCart.deserialize(req.session.cart)
     }
     //passing cart into shoppingcart.ejs
-    res.render('shoppingcart.ejs',{cart, user: false})
+    res.render('shoppingcart.ejs',{cart, user: req.user})
 })
 
 
 //MIDDLEWARE
+function authAndRedirectSignIn(req,res,next){
+    const user = firebase.auth().currentUser
+    if(!user){
+        res.redirect('/b/signin')
+    }else{
+        req.user = user
+        next()
+    }
+}
+
+
 function auth(req,res,next){
     req.user = firebase.auth().currentUser
     next()
