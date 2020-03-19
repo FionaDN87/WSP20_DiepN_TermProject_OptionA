@@ -34,8 +34,7 @@ class ShoppingCart{
         getTotal(){
             let sum = 0
             for (const item of this.contents){
-                sume += item.qty * item.product.price
-
+                sum += item.qty * item.product.price
             }
             return sum;
         }

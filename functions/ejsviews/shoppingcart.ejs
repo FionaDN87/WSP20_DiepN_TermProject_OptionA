@@ -22,6 +22,7 @@
             <th scope="col">Name</th>
             <th scope="col">Price</th>
             <th scope="col">Quantity</th>
+            <th scope="col">Sub-Total</th>
             <th scope="col">Summary</th>
           </tr>
         </thead>
@@ -32,11 +33,13 @@
             <td><%= cart.contents[i].product.name %></td>
             <td><%= cart.contents[i].product.price.toFixed(2) %></td>
             <td><%= cart.contents[i].qty %></td>
+            <td><%= (cart.contents[i].qty * cart.contents[i].product.price).toFixed(2) %></td>
             <td><%= cart.contents[i].product.summary %></td>
           </tr>
          <% } %>
         </tbody>
       </table>
+      <h2>TOTAL: <%=cart.getTotal().toFixed(2) %></h2>
    
 
     
