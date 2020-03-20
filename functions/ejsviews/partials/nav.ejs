@@ -28,7 +28,8 @@
             </li>
             <% } %>
         <li class="nav-item <%= page === 'shoppingcart' ? 'active' :'' %>">
-        <a class="nav-link" href="/b/shoppingcart">Shopping Cart</a>
+        <a class="nav-link" href="/b/shoppingcart">
+          Shopping Cart <%= cartCount > 0 ? `(${cartCount})`: '' %></a>
         </li>  
           
 

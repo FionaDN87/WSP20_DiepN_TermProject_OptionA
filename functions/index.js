@@ -61,7 +61,7 @@ const firebaseConfig = {
   const Constants = require('./myconstant.js')
 
 app.get('/',auth,async (req,res)=>{
-   
+    const cartCount  = req.session.cart ? req.session.cart.length : 0
    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
    try{
        let products = []
@@ -71,23 +71,25 @@ app.get('/',auth,async (req,res)=>{
        })
        //Display on web browser
             //res.send(JSON.stringify(products))
-            res.render('storefront.ejs', {error: false, products,user:req.user})
+            res.render('storefront.ejs', {error: false, products,user:req.user,cartCount})
    }catch(e){
        //res.send(JSON.stringify(e))
-        res.render('storefront.ejs',{error: e,user:req.user})  //if error trus, give error message
+        res.render('storefront.ejs',{error: e,user:req.user,cartCount})  //if error trus, give error message
    }
 })
 
 app.get('/b/about',auth,(req,res)=>{
-    res.render('about.ejs',{user:req.user})
+    const cartCount  = req.session.cart ? req.session.cart.length : 0
+    res.render('about.ejs',{user:req.user,cartCount})
 })
 
 app.get('/b/contact',auth,(req,res)=>{
-    res.render('contact.ejs',{user:req.user})
+    const cartCount  = req.session.cart ? req.session.cart.length : 0
+    res.render('contact.ejs',{user:req.user,cartCount})
 })
 
 app.get('/b/signin',(req,res)=>{
-    res.render('signin.ejs',{error: false,user:req.user})
+    res.render('signin.ejs',{error: false,user:req.user,cartCount:0})
 })
 
 app.post('/b/signin', async (req,res)=>{
@@ -101,31 +103,38 @@ app.post('/b/signin', async (req,res)=>{
             //Direct to system admin page
             res.redirect('/admin/sysadmin')
         }else{
+            if(!req.session.cart){
             //Direct to regular page
             res.redirect('/')
+            } else {
+                res.redirect('/b/shoppingcart')
+            }
         }
-        res.redirect('/')
+        
     }catch(e){
-        res.render('signin',{error:e,user:req.user})
+        res.render('signin',{error:e,user:req.user,cartCount:0})
     }
 })
 
 
 app.get('/b/signout', async (req,res)=>{
+   
     try{
+        //Empty cart when signing out
+        req.session.cart = null
         await firebase.auth().signOut()
+        
         res.redirect('/')
     }catch(e){
         res.send('ERROR: sign out!!!')
     }
 })
 
-app.get('/b/profile',auth, (req,res)=>{
-   if(!req.user) {   //if not signin, direct to signin page
-        res.redirect('/b/signin')
-   } else {
-       res.render('profile',{user: req.user})
-   }
+app.get('/b/profile',authAndRedirectSignIn, (req,res)=>{
+ 
+       const cartCount  = req.session.cart ? req.session.cart.length : 0
+       res.render('profile',{user: req.user, cartCount})
+   
 })
 
 app.get('/b/cart',auth, (req,res)=>{
@@ -227,12 +236,12 @@ app.get('/b/cart',auth, (req,res)=>{
 
 
 app.get('/b/signup',(req,res)=>{
-    res.render('signup.ejs',{page:'signup',user: null, error: false})
+    res.render('signup.ejs',{page:'signup',user: null, error: false, cartCount:0})
 })
 
 
 const ShoppingCart = require('./model/ShoppingCart.js')
-app.post('/b/add2cart',authAndRedirectSignIn, async (req,res)=>{
+app.post('/b/add2cart', async (req,res)=>{
     const id = req.body.docID
     const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
     try{
@@ -266,7 +275,7 @@ app.get('/b/shoppingcart',authAndRedirectSignIn, (req, res)=> {
         cart = ShoppingCart.deserialize(req.session.cart)
     }
     //passing cart into shoppingcart.ejs
-    res.render('shoppingcart.ejs',{cart, user: req.user})
+    res.render('shoppingcart.ejs',{cart, user: req.user, cartCount: cart.contents.length})
 })
 
 
