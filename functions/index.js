@@ -275,7 +275,7 @@ app.get('/b/shoppingcart',authAndRedirectSignIn, (req, res)=> {
         cart = ShoppingCart.deserialize(req.session.cart)
     }
     //passing cart into shoppingcart.ejs
-    res.render('shoppingcart.ejs',{cart, user: req.user, cartCount: cart.contents.length})
+    res.render('shoppingcart.ejs',{message: false, cart, user: req.user, cartCount: cart.contents.length})
 })
 
 app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
@@ -294,7 +294,9 @@ app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
     try{
         const collection = firebase.firestore().collection(Constants.COLL_ORDERS)
         await collection.doc().set(data)
-        res.send('Order stored')
+        req.session.cart = null //empty cart
+        res.render('shoppingcart.ejs', 
+        {message: 'Checked Out Successfully!', cart: new ShoppingCart(), user: req.user, cartCount: 0})
     }catch(e){
         console.log('=====================', e)
         res.send(JSON.stringify(e))

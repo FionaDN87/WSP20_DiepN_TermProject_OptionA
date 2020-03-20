@@ -15,6 +15,14 @@
 
     <!--DISPLAY CONTENTS OF SHOPPING CART-->
     <h1>Shopping Cart Contents</h1>
+    <% if (message) { %>
+        <div style="color: red">
+          <h4>
+            <%= message %>
+          </h4>
+        </div>
+        <% } %>
+
     <table class="table table-striped">
         <thead>
           <tr>
