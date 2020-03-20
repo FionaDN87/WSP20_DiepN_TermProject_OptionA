@@ -278,6 +278,28 @@ app.get('/b/shoppingcart',authAndRedirectSignIn, (req, res)=> {
     res.render('shoppingcart.ejs',{cart, user: req.user, cartCount: cart.contents.length})
 })
 
+app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
+    if(!req.session.cart) {  //NO shopping cart
+        return res.send('Shoping cart is EMPTY')
+    }
+    // data format to store in firestore
+    // collection : orders
+    // {uid, timestamp cart}
+    // cart = [{products, qty}...]  //Content in shopping cart
+    const data = {
+        uid: req.user.uid,
+        timestamp: firebase.firestore.Timestamp.fromDate(new Date()),
+        cart: req.session.cart
+    }
+    try{
+        const collection = firebase.firestore().collection(Constants.COLL_ORDERS)
+        await collection.doc().set(data)
+        res.send('Order stored')
+    }catch(e){
+        console.log('=====================', e)
+        res.send(JSON.stringify(e))
+    }
+})
 
 //MIDDLEWARE
 function authAndRedirectSignIn(req,res,next){
