@@ -298,8 +298,12 @@ app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
         res.render('shoppingcart.ejs', 
         {message: 'Checked Out Successfully!', cart: new ShoppingCart(), user: req.user, cartCount: 0})
     }catch(e){
-        console.log('=====================', e)
-        res.send(JSON.stringify(e))
+        const cart = ShoppingCart.deserialize(req.session.cart)
+        res.render('shoppingcart.ejs',
+        {message: 'Check out FAILED! Try again later!!!', cart, user: req.user, cartCount: cart.contents.length}
+        )
+       
+        //Retain cart when checking out fails
     }
 })
 
