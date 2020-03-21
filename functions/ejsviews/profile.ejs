@@ -43,12 +43,30 @@
     <div>
       <form action = "/b/orderhistory">
        <button type = "submit" class="btn btn-primary">Order History</button>
+       <br>
      </form>
     </div> 
     <% if (!orders){ %>   <!--no order-->
-     
     <% } else { %>
-      <%= JSON.stringify(orders)%>
+        <% orders.forEach(order => { %>
+        <b>Order Date: <%= order.timestamp.toDate() %> </b>
+        <table class="table table-striped">
+          <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Unit Price</th>
+            <th>Qty</th>
+          </tr>
+          <% for (let i = 0; i< order.cart.length; i++){ %>
+                <tr>
+                  <td><img src="<%=order.cart[i].product.image_url %>" height = "50" width = "50"></td>
+                  <td><%= order.cart[i].product.name %></td>
+                  <td><%= order.cart[i].product.price %></td>
+                  <td><%= order.cart[i].qty %></td>
+                </tr>
+          <% } %>
+        </table>
+        <% })%>
     <% } %>
   </head>
   <body>

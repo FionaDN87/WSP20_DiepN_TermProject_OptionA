@@ -133,7 +133,7 @@ app.get('/b/signout', async (req,res)=>{
 app.get('/b/profile',authAndRedirectSignIn, (req,res)=>{
  
        const cartCount  = req.session.cart ? req.session.cart.length : 0
-       res.render('profile',{user: req.user, cartCount, orders: false})
+       res.render('profile',{user: req.user, cartCount,orders: false})
    
 })
 
@@ -311,13 +311,14 @@ app.get('/b/orderhistory',authAndRedirectSignIn,async (req,res)=>{
     try{
         const collection = firebase.firestore().collection(Constants.COLL_ORDERS)
         let orders=[]   //order history
-        const snapshot = await collection.where("uid","==",req.user.uid).get()
+        const snapshot = await collection.where("uid","==",req.user.uid).orderBy("timestamp").get()
         snapshot.forEach(doc => {
             orders.push(doc.data())
         })
         res.render('profile.ejs', {user: req.user, cartCount:0, orders})       
     }catch(e){
-
+        console.log('==============',e)
+        res.send('<h1>Order History Error!!!!</h1>')
     }
 })
 
