@@ -21,16 +21,16 @@ async function show_page_secured(){
     var totalProducts=[]
     const querySnapshot = firebase.firestore().collection(COLLECTION).get()
     .then(function(querySnapshot){
-       querySnapshot.forEach(doc =>{
+       return querySnapshot.forEach(doc =>{
             const{prodID,name,summary,price,image,image_url} = doc.data()
             const t = {docId: doc.id,prodID,name,summary,price, image,image_url}
             totalProducts.push(t)
 
         });
-
+        
 
     });
-
+   
 
     
         try{
@@ -55,7 +55,7 @@ async function show_page_secured(){
         //Define the last visible product
         lastVisible = products[limitDisplay-1].prodID
         console.log("last visible product index (ShowPageSecured): ", lastVisible);
-        
+        return
     
         });
         //Display Pagination bar emphasizing this is the first page
@@ -80,11 +80,11 @@ async function show_page_secured(){
         </ul>
       </nav>
         `;
-            
+            return
 
     }catch (e){
         glPageContent.innerHTML='Firestore access error. Try again!!!!' + e
-        return
+        
     }
     //console.log(products)
 
@@ -188,7 +188,7 @@ if(p.summary!==newSummary){
     updated = true
 }
 
-if(p.price!=newPrice){
+if(p.price!==newPrice){
     newInfo.price=Number(Number(newPrice).toFixed(2))
     updated = true
 }
@@ -273,7 +273,7 @@ var totalPage;
         try{
             //console.log("Prev array 2: " + prevProducts.length);
             products = []   //empty array of products
-            if(countNext==0){
+            if(countNext===0){
             //TO DEFINE THE NEXT VISIBLE, USE PREPRODUCTS ARRAY
             nextVisible = (prevProducts[(prevProducts.length) -1].prodID);
                     const snapshot=await firebase.firestore().collection(COLLECTION)
@@ -284,9 +284,10 @@ var totalPage;
                         .then(function(snapshot){
                         snapshot.forEach(doc => {
                             const{prodID,name,summary,price,image,image_url} = doc.data()
-                    const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
-                    products.push(p)  
-                        })    
+                            const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                            products.push(p)  
+                        })
+                        return    
                         })
             
             }
@@ -303,10 +304,12 @@ var totalPage;
             const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
             products.push(p)  
 
-                })    
+                })
+                return    
                 })
                 countNext=0;
                 countPre=0;
+                return
             }
 
                 
@@ -409,7 +412,7 @@ var totalPage;
              
                
                 }    
-                
+                return
             });
         }catch (e){
             glPageContent.innerHTML='Forestore access error. Try again!!!!' + e
@@ -430,7 +433,7 @@ var totalPage;
         try{
             products = []   //empty array of products
             
-            if(countPre==0)            //First time using Previous Button
+            if(countPre===0)            //First time using Previous Button
                 { firstPreVisible = (curProducts[0].prodID);
                     const snapshot=await firebase.firestore().collection(COLLECTION)
                     .orderBy("prodID","desc")
@@ -442,9 +445,11 @@ var totalPage;
                         const{prodID,name,summary,price,image,image_url} = doc.data()
                 const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
                 products.push(p)  
-                    })    
+                    })  
+                    return  
                     })
                 countNext++;
+                
                 }
                 else{               //NOT First time using Previous Button
                 firstPreVisible=curProducts[curProducts.length-1].prodID
@@ -460,9 +465,11 @@ var totalPage;
                 const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
                 products.push(p)  
                     })    
+                    return
                     })
             countPre=0;
             countNext++;
+            
             }
       
                 glPageContent.innerHTML=`
@@ -481,7 +488,7 @@ var totalPage;
                
                 
                 //First Page, only display NEXT button
-                if(pageNumber==1){ 
+                if(pageNumber===1){ 
                     glPageContent.innerHTML+=`
                 <nav aria-label="...">
                 <ul class="pagination">   

@@ -12,7 +12,7 @@ function add_page_secured(){
     var nextID;
     try{
     
-    snapshot = firebase.firestore().collection(COLLECTION).get().then(snap => {
+      snapshot = firebase.firestore().collection(COLLECTION).get().then(snap => {
         size = snap.size // will return the collection size
 
         products = []   //array of products
@@ -21,11 +21,11 @@ function add_page_secured(){
         .then(function(snapshot){
             snapshot.forEach(doc =>{
                 const{prodID,name,summary,price,image,image_url} = doc.data()
-                const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
-                products.push(p)
+                 const p = {docId: doc.id,prodID,name,summary,price, image,image_url}
+                return products.push(p)
 
             }); 
-            console.log("Total products:" + products.length)
+        console.log("Total products:" + products.length)
          
         
         //nextID = products[products.length-1].prodID+1
@@ -67,10 +67,11 @@ function add_page_secured(){
         glImageFile2Add = e.target.files[0]
         //console.log('file upload', e.target.files[0])
     })
+    return 
      });
-        
+    return
     });
-  
+    return 
        
 }catch(e){
     glPageContent.innerHTML='Forestore access error. Try again!!!!' + e

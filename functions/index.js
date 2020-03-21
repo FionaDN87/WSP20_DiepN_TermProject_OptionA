@@ -25,7 +25,8 @@ app.set('views','./ejsviews')
 //Frontend code
 
 function frontendHandler(req,res){
-    res.sendFile(__dirname + '/proadmin/proadmin.html')
+    res.sendFile(path.join(__dirname , '/proadmin/proadmin.html'))
+
 }
 
 app.get('/login', frontendHandler);
@@ -38,6 +39,7 @@ const session = require('express-session')
 app.use(session(
     {
         secret: 'anysecrestring.fjkdlsaj!!!',
+        name: '__session',
         saveUninitialized: false,
         resave: false
     }
@@ -71,8 +73,17 @@ app.get('/',auth,async (req,res)=>{
        })
        //Display on web browser
             //res.send(JSON.stringify(products))
+            
+            //Fix bug deploying to make add to cart work
+            res.setHeader('Cache-Control','private');
+            //-----------------------------------------
+
+
             res.render('storefront.ejs', {error: false, products,user:req.user,cartCount})
    }catch(e){
+       //Fix bug deploying to make add to cart work
+       res.setHeader('Cache-Control','private');
+       //-----------------------------------------
        //res.send(JSON.stringify(e))
         res.render('storefront.ejs',{error: e,user:req.user,cartCount})  //if error trus, give error message
    }
@@ -80,15 +91,30 @@ app.get('/',auth,async (req,res)=>{
 
 app.get('/b/about',auth,(req,res)=>{
     const cartCount  = req.session.cart ? req.session.cart.length : 0
+
+    //Fix bug deploying to make add to cart work
+    res.setHeader('Cache-Control','private');
+    //-----------------------------------------
+
     res.render('about.ejs',{user:req.user,cartCount})
 })
 
 app.get('/b/contact',auth,(req,res)=>{
     const cartCount  = req.session.cart ? req.session.cart.length : 0
+
+    //Fix bug deploying to make add to cart work
+    res.setHeader('Cache-Control','private');
+    //-----------------------------------------
+
     res.render('contact.ejs',{user:req.user,cartCount})
 })
 
 app.get('/b/signin',(req,res)=>{
+
+    //Fix bug deploying to make add to cart work
+    res.setHeader('Cache-Control','private');
+    //-----------------------------------------
+
     res.render('signin.ejs',{error: false,user:req.user,cartCount:0})
 })
 
@@ -99,19 +125,32 @@ app.post('/b/signin', async (req,res)=>{
     try{
         const userRecord = await auth.signInWithEmailAndPassword(email,password)
         if(userRecord.user.email === Constants.SYSADMINEMAIL) {
+
+            //Fix bug deploying to make add to cart work
+            res.setHeader('Cache-Control','private');
+            //-----------------------------------------
             //If userRecord is sysadmind email
             //Direct to system admin page
             res.redirect('/admin/sysadmin')
         }else{
             if(!req.session.cart){
+            //Fix bug deploying to make add to cart work
+            res.setHeader('Cache-Control','private');
+            //-----------------------------------------
             //Direct to regular page
             res.redirect('/')
             } else {
+                //Fix bug deploying to make add to cart work
+                res.setHeader('Cache-Control','private');
+                //-----------------------------------------
                 res.redirect('/b/shoppingcart')
             }
         }
         
     }catch(e){
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
         res.render('signin',{error:e,user:req.user,cartCount:0})
     }
 })
@@ -133,6 +172,10 @@ app.get('/b/signout', async (req,res)=>{
 app.get('/b/profile',authAndRedirectSignIn, (req,res)=>{
  
        const cartCount  = req.session.cart ? req.session.cart.length : 0
+
+       //Fix bug deploying to make add to cart work
+       res.setHeader('Cache-Control','private');
+       //-----------------------------------------
        res.render('profile',{user: req.user, cartCount,orders: false})
    
 })
@@ -260,9 +303,16 @@ app.post('/b/add2cart', async (req,res)=>{
 
         //update shopping cart into session
         req.session.cart = cart.serialize()
+
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
         //Redirect to backend
         res.redirect('/b/shoppingcart')
     }catch(e){
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
         res.send(JSON.stringify)
     }
 })
@@ -274,12 +324,18 @@ app.get('/b/shoppingcart',authAndRedirectSignIn, (req, res)=> {
     } else {
         cart = ShoppingCart.deserialize(req.session.cart)
     }
+    //Fix bug deploying to make add to cart work
+    res.setHeader('Cache-Control','private');
+    //-----------------------------------------
     //passing cart into shoppingcart.ejs
     res.render('shoppingcart.ejs',{message: false, cart, user: req.user, cartCount: cart.contents.length})
 })
 
 app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
     if(!req.session.cart) {  //NO shopping cart
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
         return res.send('Shoping cart is EMPTY')
     }
     // data format to store in firestore
@@ -295,11 +351,17 @@ app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
         const collection = firebase.firestore().collection(Constants.COLL_ORDERS)
         await collection.doc().set(data)
         req.session.cart = null //empty cart
-        res.render('shoppingcart.ejs', 
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
+        return res.render('shoppingcart.ejs', 
         {message: 'Checked Out Successfully!', cart: new ShoppingCart(), user: req.user, cartCount: 0})
     }catch(e){
         const cart = ShoppingCart.deserialize(req.session.cart)
-        res.render('shoppingcart.ejs',
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
+        return res.render('shoppingcart.ejs',
         {message: 'Check out FAILED! Try again later!!!', cart, user: req.user, cartCount: cart.contents.length}
         )
        
@@ -315,9 +377,15 @@ app.get('/b/orderhistory',authAndRedirectSignIn,async (req,res)=>{
         snapshot.forEach(doc => {
             orders.push(doc.data())
         })
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
         res.render('profile.ejs', {user: req.user, cartCount:0, orders})       
     }catch(e){
         console.log('==============',e)
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
         res.send('<h1>Order History Error!!!!</h1>')
     }
 })
@@ -327,10 +395,13 @@ app.get('/b/orderhistory',authAndRedirectSignIn,async (req,res)=>{
 function authAndRedirectSignIn(req,res,next){
     const user = firebase.auth().currentUser
     if(!user){
-        res.redirect('/b/signin')
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
+        return res.redirect('/b/signin')
     }else{
         req.user = user
-        next()
+        return next()
     }
 }
 
@@ -357,9 +428,9 @@ app.get('/admin/listUsers',authSysAdmin,(req,res)=>{
 function authSysAdmin(req,res,next){
     const user = firebase.auth().currentUser
     if(!user || !user.email || user.email !== Constants.SYSADMINEMAIL){
-        res.send('<h1>System Admin Page: Access Denied!!!</h1>')
+        return res.send('<h1>System Admin Page: Access Denied!!!</h1>')
     } else {
-        next()
+        return next()
     }
 }
 
@@ -369,7 +440,7 @@ function authSysAdmin(req,res,next){
 //REMEMBER: APP.GET HANDLES GET METHOD ONLY
 app.get('/testlogin',(req,res)=>{
     //res.sendFile(path.join(__dirname, '/static/html/login.html'))  //This does not work
-    res.sendFile(__dirname + '/static/html/login.html')
+    res.sendFile(path.join(__dirname , '/static/html/login.html'))
 })
 
 //APP.POST IS USED FOR POST METHOD
