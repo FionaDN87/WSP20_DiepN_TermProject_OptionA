@@ -37,6 +37,19 @@
 
 
     </table>
+    
+   
+
+    <div>
+      <form action = "/b/orderhistory">
+       <button type = "submit" class="btn btn-primary">Order History</button>
+     </form>
+    </div> 
+    <% if (!orders){ %>   <!--no order-->
+     
+    <% } else { %>
+      <%= JSON.stringify(orders)%>
+    <% } %>
   </head>
   <body>
    

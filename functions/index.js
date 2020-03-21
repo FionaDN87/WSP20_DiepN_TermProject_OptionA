@@ -133,7 +133,7 @@ app.get('/b/signout', async (req,res)=>{
 app.get('/b/profile',authAndRedirectSignIn, (req,res)=>{
  
        const cartCount  = req.session.cart ? req.session.cart.length : 0
-       res.render('profile',{user: req.user, cartCount})
+       res.render('profile',{user: req.user, cartCount, orders: false})
    
 })
 
@@ -306,6 +306,21 @@ app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
         //Retain cart when checking out fails
     }
 })
+
+app.get('/b/orderhistory',authAndRedirectSignIn,async (req,res)=>{
+    try{
+        const collection = firebase.firestore().collection(Constants.COLL_ORDERS)
+        let orders=[]   //order history
+        const snapshot = await collection.where("uid","==",req.user.uid).get()
+        snapshot.forEach(doc => {
+            orders.push(doc.data())
+        })
+        res.render('profile.ejs', {user: req.user, cartCount:0, orders})       
+    }catch(e){
+
+    }
+})
+
 
 //MIDDLEWARE
 function authAndRedirectSignIn(req,res,next){
