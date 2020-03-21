@@ -19,9 +19,9 @@ async function createUser (req,res) {
         await admin.auth().createUser (
             {email,password,displayName,phoneNumber,photoURL}
         )
-    res.render('signin.ejs',{page: 'signin', user: false, error:'Account created: Sign In Please! '})
+    res.render('signin.ejs',{page: 'signin', user: false,cartCount:0, error:'Account created: Sign In Please! '})
     }catch (e){
-    res.render('signup.ejs',{error: e, user: false, page:'signup'})
+    res.render('signup.ejs',{error: e, user: false,cartCount:0, page:'signup'})
     }
 }
 async function listUsers(req,res){
