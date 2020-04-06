@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <%- include('partials/header.ejs') %>
+
+    <title>Wish List</title>
+  </head>
+  <body>
+      <!--USING PARTIALS TO AVOID CODE REPETITION-->
+    <%- include('partials/nav.ejs',{page: 'wishlist'})%>
+
+    <!--DISPLAY CONTENTS OF SHOPPING CART-->
+    <h1>Wish List</h1>
+    <% if (message) { %>
+        <div style="color: red">
+          <h4>
+            <%= message %>
+          </h4>
+        </div>
+        <% } %>
+
+    <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">Image</th>
+            <th scope="col">Name</th>
+            <th scope="col">Price</th>
+            <th scope="col"><i class="fas fa-heart" style="color:green"></i></th>
+            <th scope="col">Unit Price</th>
+            <th scope="col">Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+            <%  for (let i = 0; i< cartW.contents.length; i++){ %>
+          <tr>
+            <th scope="row"><img width = 50 height = 50 src = "<%= cartW.contents[i].product.image_url %>"></th>
+            <td><%= cartW.contents[i].product.name %></td>
+            <td><%= cartW.contents[i].product.price.toFixed(2) %></td>
+            <td><%= cartW.contents[i].qty %></td>
+            <td><%= (cartW.contents[i].qty * cartW.contents[i].product.price).toFixed(2) %></td>
+            <td><%= cartW.contents[i].product.summary %></td>
+          </tr>
+         <% } %>
+        </tbody>
+      </table>
+      
+   
+
+<%- include('partials/scripts.ejs') %>
+  </body>
+</html>

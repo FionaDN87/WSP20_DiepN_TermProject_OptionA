@@ -28,11 +28,14 @@
             </li>
             <% } %>
         <li class="nav-item <%= page === 'shoppingcart' ? 'active' :'' %>">
-        <a class="nav-link" href="/b/shoppingcart">
+        <a class="nav-link" href="/b/shoppingcart"><i class="fas fa-shopping-cart" style = "color:green"></i>
           Shopping Cart <%= cartCount > 0 ? `(${cartCount})`: '' %></a>
         </li>  
-          
-
+       
+        <li class="nav-item <%= page === 'wishlist' ? 'active' :'' %>">
+        <a class="nav-link" href="/b/wishlist"><i class="fas fa-heart" style="color:green"></i>
+          WishList </a>
+        </li> 
 
 
       

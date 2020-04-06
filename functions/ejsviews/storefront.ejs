@@ -27,14 +27,21 @@
               <h5 class="card-title"><%= p.data.name %><br> {Category: <%= p.data.cat %>}</h5>
               <p class="card-text">$(<%= p.data.price%>)<br> <%= p.data.summary %></p>
               
+              <div class= row>
               <form action="/b/add2cart" method="post">
                 <input type="hidden" name="docID" value="<%= p.id %>">
-                <button type="submit" class="btn btn-primary">Add to Shopping Cart</button>
+                <button class="btn"><i class="fas fa-cart-plus" style="color: green"></i></button>
               </form>
-            
-
+               <!--Wishlist button-->
+               <form action="/b/add2wish" method="post">
+                <input type="hidden" name="docID" value="<%= p.id %>">
+                <button class="btn"><i class="far fa-heart" style="color:red"></i></button>
+                
+              </form>
+              <!--Wishlist button-->
+              
            
-
+            </div>
 
             </div>
           </div>

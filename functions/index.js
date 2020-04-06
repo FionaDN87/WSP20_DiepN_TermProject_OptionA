@@ -45,6 +45,11 @@ app.use(session(
     }
 ))
 
+
+//************************************/
+
+
+
 const firebase = require('firebase')
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -64,6 +69,7 @@ const firebaseConfig = {
 
 app.get('/',auth,async (req,res)=>{
     const cartCount  = req.session.cart ? req.session.cart.length : 0
+    const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
    try{
        let products = []
@@ -79,34 +85,34 @@ app.get('/',auth,async (req,res)=>{
             //-----------------------------------------
 
 
-            res.render('storefront.ejs', {error: false, products,user:req.user,cartCount})
+            res.render('storefront.ejs', {error: false, products,user:req.user,cartCount,cartCountW})
    }catch(e){
        //Fix bug deploying to make add to cart work
        res.setHeader('Cache-Control','private');
        //-----------------------------------------
        //res.send(JSON.stringify(e))
-        res.render('storefront.ejs',{error: e,user:req.user,cartCount})  //if error trus, give error message
+        res.render('storefront.ejs',{error: e,user:req.user,cartCount,cartCountW})  //if error true, give error message
    }
 })
 
 app.get('/b/about',auth,(req,res)=>{
     const cartCount  = req.session.cart ? req.session.cart.length : 0
-
+    const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
     //Fix bug deploying to make add to cart work
     res.setHeader('Cache-Control','private');
     //-----------------------------------------
 
-    res.render('about.ejs',{user:req.user,cartCount})
+    res.render('about.ejs',{user:req.user,cartCount, cartCountW})
 })
 
 app.get('/b/contact',auth,(req,res)=>{
     const cartCount  = req.session.cart ? req.session.cart.length : 0
-
+    const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
     //Fix bug deploying to make add to cart work
     res.setHeader('Cache-Control','private');
     //-----------------------------------------
 
-    res.render('contact.ejs',{user:req.user,cartCount})
+    res.render('contact.ejs',{user:req.user,cartCount,cartCountW})
 })
 
 app.get('/b/signin',(req,res)=>{
@@ -115,7 +121,7 @@ app.get('/b/signin',(req,res)=>{
     res.setHeader('Cache-Control','private');
     //-----------------------------------------
 
-    res.render('signin.ejs',{error: false,user:req.user,cartCount:0})
+    res.render('signin.ejs',{error: false,user:req.user,cartCount:0,cartCountW:0})
 })
 
 app.post('/b/signin', async (req,res)=>{
@@ -151,7 +157,7 @@ app.post('/b/signin', async (req,res)=>{
         //Fix bug deploying to make add to cart work
         res.setHeader('Cache-Control','private');
         //-----------------------------------------
-        res.render('signin',{error:e,user:req.user,cartCount:0})
+        res.render('signin',{error:e,user:req.user,cartCount:0,cartCountW:0})
     }
 })
 
@@ -172,11 +178,11 @@ app.get('/b/signout', async (req,res)=>{
 app.get('/b/profile',authAndRedirectSignIn, (req,res)=>{
  
        const cartCount  = req.session.cart ? req.session.cart.length : 0
-
+       const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
        //Fix bug deploying to make add to cart work
        res.setHeader('Cache-Control','private');
        //-----------------------------------------
-       res.render('profile',{user: req.user, cartCount,orders: false})
+       res.render('profile',{user: req.user, cartCount,cartCountW,orders: false})
    
 })
 
@@ -279,7 +285,7 @@ app.get('/b/cart',auth, (req,res)=>{
 
 
 app.get('/b/signup',(req,res)=>{
-    res.render('signup.ejs',{page:'signup',user: null, error: false, cartCount:0})
+    res.render('signup.ejs',{page:'signup',user: null, error: false, cartCount:0,cartCountW:0})
 })
 
 
@@ -389,7 +395,58 @@ app.get('/b/orderhistory',authAndRedirectSignIn,async (req,res)=>{
         res.send('<h1>Order History Error!!!!</h1>')
     }
 })
+//************************************************************************/
+const WishList = require('./model/WishList.js')
+app.post('/b/add2wish', async (req,res)=>{
+    const id = req.body.docID
+    const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    try{
+        const doc = await collection.doc(id).get()
+        //Store product ID into shopping cart
+        let cartW;
+        if(!req.session.cartW){
+            // first time add to cart
+            //Create new shopping cart object
+            cartW = new WishList()
+        }else {
+            cartW = WishList.deserialize(req.session.cartW)
+        }
+        const {name,price,summary,image,image_url} = doc.data()
+        cartW.add({id, name, price, summary, image, image_url})
 
+        //update shopping cart into session
+        req.session.cartW = cartW.serialize()
+
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
+        //Redirect to backend
+        res.redirect('/b/wishlist')
+    }catch(e){
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');
+        //-----------------------------------------
+        res.send(JSON.stringify)
+    }
+})
+
+app.get('/b/wishlist',authAndRedirectSignIn, (req, res)=> {
+    let cartW
+    const cartCount  = req.session.cart ? req.session.cart.length : 0
+    const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
+    if(!req.session.cartW){
+        cartW = new WishList()
+    } else {
+        cartW = WishList.deserialize(req.session.cartW)
+    }
+    //Fix bug deploying to make add to cart work
+    res.setHeader('Cache-Control','private');
+    //-----------------------------------------
+    //passing cart into shoppingcart.ejs
+    res.render('wishlist.ejs',{message: false, cartW, user: req.user,cartCount, cartCountW: cartW.contents.length})
+})
+
+//************************************************************************/
 
 //MIDDLEWARE
 function authAndRedirectSignIn(req,res,next){
