@@ -167,6 +167,8 @@ app.get('/b/signout', async (req,res)=>{
     try{
         //Empty cart when signing out
         req.session.cart = null
+        //Empty wish list
+        req.session.cartW=null
         await firebase.auth().signOut()
         
         res.redirect('/')
