@@ -28,7 +28,7 @@
           <tr>
             <th scope="col">Image</th>
             <th scope="col">Name</th>
-            <th scope="col">Price</th>
+           
             <th scope="col"><i class="fas fa-heart" style="color:green"></i></th>
             <th scope="col">Unit Price</th>
             <th scope="col">Summary</th>
@@ -39,9 +39,9 @@
           <tr>
             <th scope="row"><img width = 50 height = 50 src = "<%= cartW.contents[i].product.image_url %>"></th>
             <td><%= cartW.contents[i].product.name %></td>
-            <td><%= cartW.contents[i].product.price.toFixed(2) %></td>
+           
             <td><%= cartW.contents[i].qty %></td>
-            <td><%= (cartW.contents[i].qty * cartW.contents[i].product.price).toFixed(2) %></td>
+            <td><%= cartW.contents[i].product.price.toFixed(2) %></td>
             <td><%= cartW.contents[i].product.summary %></td>
           </tr>
          <% } %>
