@@ -41,7 +41,10 @@ app.use(session(
         secret: 'anysecrestring.fjkdlsaj!!!',
         name: '__session',
         saveUninitialized: false,
-        resave: false
+        resave: false,
+        secure: true,
+        maxAge: 1000*60*60*2, //(2 hours)
+        rolling: true,    //Reset maxAge at every response
     }
 ))
 
@@ -68,6 +71,7 @@ const firebaseConfig = {
   const Constants = require('./myconstant.js')
 
 app.get('/',auth,async (req,res)=>{
+    console.log('================', req.decodedIdToken ? req.decodedIdToken.email : 'no user')
     const cartCount  = req.session.cart ? req.session.cart.length : 0
     const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
@@ -85,13 +89,13 @@ app.get('/',auth,async (req,res)=>{
             //-----------------------------------------
 
 
-            res.render('storefront.ejs', {error: false, products,user:req.user,cartCount,cartCountW})
+            res.render('storefront.ejs', {error: false, products,user:req.decodedIdToken,cartCount,cartCountW})
    }catch(e){
        //Fix bug deploying to make add to cart work
        res.setHeader('Cache-Control','private');
        //-----------------------------------------
        //res.send(JSON.stringify(e))
-        res.render('storefront.ejs',{error: e,user:req.user,cartCount,cartCountW})  //if error true, give error message
+        res.render('storefront.ejs',{error: e,user:req.decodedIdToken,cartCount,cartCountW})  //if error true, give error message
    }
 })
 
@@ -125,11 +129,19 @@ app.get('/b/signin',(req,res)=>{
 })
 
 app.post('/b/signin', async (req,res)=>{
+   
     const email = req.body.email
     const password = req.body.password
     const auth = firebase.auth()
     try{
+        //Cookie persistent setting
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE)
         const userRecord = await auth.signInWithEmailAndPassword(email,password)
+        const idToken = await userRecord.user.getIdToken()  //return incoded idToken
+        await auth.signOut()    //signout
+
+        req.session.idToken = idToken   //each user has different session, store idToken into session variable
+
         if(userRecord.user.email === Constants.SYSADMINEMAIL) {
 
             //Fix bug deploying to make add to cart work
@@ -157,24 +169,21 @@ app.post('/b/signin', async (req,res)=>{
         //Fix bug deploying to make add to cart work
         res.setHeader('Cache-Control','private');
         //-----------------------------------------
-        res.render('signin',{error:e,user:req.user,cartCount:0,cartCountW:0})
+        res.render('signin',{error:e,user:null,cartCount:0,cartCountW:0})
     }
 })
 
 
 app.get('/b/signout', async (req,res)=>{
-   
-    try{
-        //Empty cart when signing out
-        req.session.cart = null
-        //Empty wish list
-        req.session.cartW=null
-        await firebase.auth().signOut()
-        
-        res.redirect('/')
-    }catch(e){
-        res.send('ERROR: sign out!!!')
-    }
+   req.session.destroy(err=>{
+       if(err){
+        console.log('======== session.destroy error: ', err)
+        req.session  = null
+        res.send('Error: sign out (session.destroy error)')
+       }else {
+           res.redirect('/')
+       }
+   })
 })
 
 app.get('/b/profile',authAndRedirectSignIn, (req,res)=>{
@@ -465,8 +474,22 @@ function authAndRedirectSignIn(req,res,next){
 }
 
 
-function auth(req,res,next){
-    req.user = firebase.auth().currentUser
+async function auth(req,res,next){
+
+    try{
+        if(req.session && req.session.idToken){
+            const decodedIdToken = await adminUtil.verifyIdToken(req.session.idToken)
+            req.decodedIdToken = decodedIdToken
+        } else{  //no sign in yet
+            req.decodedIdToken = null
+        }
+
+    }catch (e){
+        req.decodedIdToken = null
+
+    }
+    //req.user = firebase.auth().currentUser   //This is reason why only 1 user used in different browsers/computers
+                                            // only last signed-in user is regconized
     next()
 }
 

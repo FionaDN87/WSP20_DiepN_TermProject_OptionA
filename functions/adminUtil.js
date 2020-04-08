@@ -35,8 +35,19 @@ async function listUsers(req,res){
 
     }
 }
+async function verifyIdToken(idToken){
+    try{
+        const decodedIdToken = await admin.auth().verifyIdToken(idToken)
+        return decodedIdToken
+    }catch(e){
+        return null
+
+    }
+}
+
 module.exports = {
     createUser,
     listUsers,
+    verifyIdToken,
 }   //Export an object
 
