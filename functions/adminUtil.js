@@ -6,7 +6,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://diepn-wsp20.firebaseio.com"
 });
-
+const Constants = require('./myconstant.js')
 async function createUser (req,res) {
     //Read info input
     //Predefined constances
@@ -45,9 +45,52 @@ async function verifyIdToken(idToken){
     }
 }
 
+
+async function getOrderHistory(decodedIdToken){
+    try{
+        const collection = admin.firestore().collection(Constants.COLL_ORDERS)
+        let orders=[]   //order history
+        console.log('BEGIN QUERY ORDER HISTORY')
+        //-----
+        collection.get().then(snapshot => {
+            snapshot.forEach(doc => {
+                console.log(doc.data())
+            })
+        })
+        //-----
+        const snapshot = await collection.where("uid","==",decodedIdToken.uid).orderBy("timestamp").get()
+        snapshot.forEach(doc => {
+            orders.push(doc.data())
+            
+        })
+        console.log('END QUERY ORDER HISTORY')
+        //console.log('============',orders)
+        return orders
+    }catch(e){
+        console.log('ERROR getOrderHistory:',e)
+        return null
+    }
+
+
+
+}
+
+async function checkOut(data){
+    data.timestamp = admin. firestore.Timestamp.fromDate(new Date())
+    try{
+        const collection = admin.firestore().collection(Constants.COLL_ORDERS)
+        await collection.doc().set(data)
+
+    }catch(e){
+        throw e
+    }
+}
+
 module.exports = {
     createUser,
     listUsers,
     verifyIdToken,
+    getOrderHistory,
+    checkOut,
 }   //Export an object
 
