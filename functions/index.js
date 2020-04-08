@@ -190,10 +190,12 @@ app.get('/b/profile',authAndRedirectSignIn, (req,res)=>{
  
        const cartCount  = req.session.cart ? req.session.cart.length : 0
        const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
+
+       console.log('========== decodedIdToken', req.decodedIdToken)
        //Fix bug deploying to make add to cart work
        res.setHeader('Cache-Control','private');
        //-----------------------------------------
-       res.render('profile',{user: req.user, cartCount,cartCountW,orders: false})
+       res.render('profile',{user: req.decodedIdToken, cartCount,cartCountW,orders: false})
    
 })
 
@@ -460,17 +462,23 @@ app.get('/b/wishlist',authAndRedirectSignIn, (req, res)=> {
 //************************************************************************/
 
 //MIDDLEWARE
-function authAndRedirectSignIn(req,res,next){
-    const user = firebase.auth().currentUser
-    if(!user){
-        //Fix bug deploying to make add to cart work
-        res.setHeader('Cache-Control','private');
-        //-----------------------------------------
-        return res.redirect('/b/signin')
-    }else{
-        req.user = user
-        return next()
-    }
+async function authAndRedirectSignIn(req,res,next){
+    try{
+        //get decodedIdToken
+        const decodedIdToken = await adminUtil.verifyIdToken(req.session.idToken)
+        if (decodedIdToken.uid){
+            req.decodedIdToken = decodedIdToken
+            return next()
+        }
+
+    }catch(e)
+    {
+        console.log('============== authAndRedirect error', e)
+
+    }   
+    res.setHeader('Cache-Control', 'private')
+    return res.redirect('/b/signin')
+ 
 }
 
 
