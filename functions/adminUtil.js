@@ -51,13 +51,7 @@ async function getOrderHistory(decodedIdToken){
         const collection = admin.firestore().collection(Constants.COLL_ORDERS)
         let orders=[]   //order history
         console.log('BEGIN QUERY ORDER HISTORY')
-        //-----
-        collection.get().then(snapshot => {
-            snapshot.forEach(doc => {
-                console.log(doc.data())
-            })
-        })
-        //-----
+       
         const snapshot = await collection.where("uid","==",decodedIdToken.uid).orderBy("timestamp").get()
         snapshot.forEach(doc => {
             orders.push(doc.data())
