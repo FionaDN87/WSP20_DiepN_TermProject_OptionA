@@ -36,6 +36,9 @@ app.get('/show',frontendHandler);
 
 //Backend code
 const session = require('express-session')
+
+
+
 app.use(session(
     {
         secret: 'anysecrestring.fjkdlsaj!!!',
@@ -82,21 +85,22 @@ app.get('/',auth,async (req,res)=>{
        snapshot.forEach(doc =>{
            products.push({id: doc.id, data:doc.data()})
        })
+       var pages=(Math.ceil(products.length/10));
        //Display on web browser
             //res.send(JSON.stringify(products))
             
             //Fix bug deploying to make add to cart work
             res.setHeader('Cache-Control','private');
             //-----------------------------------------
+            
 
-
-            res.render('storefront.ejs', {error: false, products,user:req.decodedIdToken,cartCount,cartCountW})
+            res.render('storefront.ejs', {error: false, products:products.slice(0,10),user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})
    }catch(e){
        //Fix bug deploying to make add to cart work
        res.setHeader('Cache-Control','private');
        //-----------------------------------------
        //res.send(JSON.stringify(e))
-        res.render('storefront.ejs',{error: e,user:req.decodedIdToken,cartCount,cartCountW})  //if error true, give error message
+        res.render('storefront.ejs',{error: e,user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})  //if error true, give error message
    }
 })
 
@@ -350,6 +354,44 @@ app.get('/b/shoppingcart',authAndRedirectSignIn, (req, res)=> {
     //passing cart into shoppingcart.ejs
     res.render('shoppingcart.ejs',{message: false, cart, user: req.decodedIdToken, cartCount: cart.contents.length})
 })
+
+//----
+app.get('/:page', async function(req, res, next) {
+    const cartCount  = req.session.cart ? req.session.cart.length : 0
+    const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
+    //Fix bug deploying to make add to cart work
+    res.setHeader('Cache-Control','private');
+    
+    var perPage = 10
+    var page = req.params.page || 1
+
+
+    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    let products = []
+       const snapshot =  await coll.orderBy("name").get()
+       snapshot.forEach(doc =>{
+           products.push({id: doc.id, data:doc.data()})
+       })
+       
+    
+    res.render('storefront.ejs', {
+        error: false,
+        user: req.decodedIdToken,
+        products: products.slice(perPage * page - perPage, perPage * page),
+        current: page,
+        cartCount,
+        cartCountW,
+        pages: Math.ceil(products.length / perPage),
+    })
+
+   
+   
+
+})
+//----
+
+
+
 
 app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
     if(!req.session.cart) {  //NO shopping cart

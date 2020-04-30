@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -19,34 +20,112 @@
 <% if (error){ %>
     <p style="color:red"><%= JSON.stringify(error) %></p>
 <%} else { %>
-    <!--DISPLAY PRODUCTS USING LOOP-->
-    <% for (let p of products){ %>
-        <div class="card" style="width: 18rem; display: inline-block">
-            <img src="<%= p.data.image_url %>" class="card-img-top">
-            <div class="card-body">
-              <h5 class="card-title"><%= p.data.name %><br></h5>
-              <p class="card-text">$(<%= p.data.price%>)<br> <%= p.data.summary %></p>
-              
-              <div class= row>
-              <form action="/b/add2cart" method="post">
-                <input type="hidden" name="docID" value="<%= p.id %>">
-                <button class="btn"><i class="fas fa-cart-plus" style="color: green"></i></button>
-              </form>
-               <!--Wishlist button-->
-               <form action="/b/add2wish" method="post">
-                <input type="hidden" name="docID" value="<%= p.id %>">
-                <button class="btn"><i class="far fa-heart" style="color:red"></i></button>
-                
-              </form>
-              <!--Wishlist button-->
-              
-           
-            </div>
+  
+    <!--PAGINATION BUTTON-->
+    
+    <br>
+    
+  </div>
+  <% if (pages > 0) { %>
+      <ul class="pagination text-center">
+          <% if (current == 1) { %>
+              <li class="disabled"><a>First</a></li>
+          <% } else { %>
+              <li><a href="/1">First</a></li>
+          <% } %>
+          <% var i = (Number(current) > 5 ? Number(current) - 4 : 1) %>
+          <% if (i !== 1) { %>
+              <li class="disabled"><a>...</a></li>
+          <% } %>
+          <% for (; i <= (Number(current) + 4) && i <= pages; i++) { %>
+              <% if (i == current) { %>
+                  <li class="active"><a><%= i %></a></li>
+              <% } else { %>
+                  <li><a href="/<%= i %>"><%= i %></a></li>
+              <% } %>
+              <% if (i == Number(current) + 4 && i < pages) { %>
+                  <li class="disabled"><a>...</a></li>
+              <% } %>
+          <% } %>
+          <% if (current == pages) { %>
+              <li class="disabled"><a>Last</a></li>
+          <% } else { %>
+              <li><a href="/<%= pages %>">Last</a></li>
+          <% } %>
+      </ul>
+  <% } %>
+</div>
 
+
+
+
+
+
+    <div class="container">
+      <div class="row">
+        <% for (let p of products){ %>
+          <div class="card" style="width: 18rem; display: inline-block">
+              <img src="<%= p.data.image_url %>" class="card-img-top">
+              <div class="card-body">
+                <h5 class="card-title"><%= p.data.name %><br></h5>
+                <p class="card-text">$(<%= p.data.price%>)<br> <%= p.data.summary %></p>
+                
+                <div class= row>
+                <form action="/b/add2cart" method="post">
+                  <input type="hidden" name="docID" value="<%= p.id %>">
+                  <button class="btn"><i class="fas fa-cart-plus" style="color: green"></i></button>
+                </form>
+                 <!--Wishlist button-->
+                 <form action="/b/add2wish" method="post">
+                  <input type="hidden" name="docID" value="<%= p.id %>">
+                  <button class="btn"><i class="far fa-heart" style="color:red"></i></button>
+                </form>
+                <!--Wishlist button-->  
+              </div>
+      
+              </div>
             </div>
-          </div>
-    <% } %>
+      
+        
+      <% } %>
+      
+      </div>
+          <% if (pages > 0) { %>
+              <ul class="pagination text-center">
+                  <% if (current == 1) { %>
+                      <li class="disabled"><a>First</a></li>
+                  <% } else { %>
+                      <li><a href="/1">First</a></li>
+                  <% } %>
+                  <% var i = (Number(current) > 5 ? Number(current) - 4 : 1) %>
+                  <% if (i !== 1) { %>
+                      <li class="disabled"><a>...</a></li>
+                  <% } %>
+                  <% for (; i <= (Number(current) + 4) && i <= pages; i++) { %>
+                      <% if (i == current) { %>
+                          <li class="active"><a><%= i %></a></li>
+                      <% } else { %>
+                          <li><a href="/<%= i %>"><%= i %></a></li>
+                      <% } %>
+                      <% if (i == Number(current) + 4 && i < pages) { %>
+                          <li class="disabled"><a>...</a></li>
+                      <% } %>
+                  <% } %>
+                  <% if (current == pages) { %>
+                      <li class="disabled"><a>Last</a></li>
+                  <% } else { %>
+                      <li><a href="/<%= pages %>">Last</a></li>
+                  <% } %>
+              </ul>
+          <% } %>
+  </div>
+    
+    
 <% } %>   <!--else part-->
+
+
+
+
 
 <%- include('partials/scripts.ejs') %>
   </body>
