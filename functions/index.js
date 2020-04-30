@@ -75,10 +75,54 @@ const firebaseConfig = {
   const adminUtil = require('./adminUtil.js')
 
 app.get('/',auth,async (req,res)=>{
-    //console.log('================', req.decodedIdToken ? req.decodedIdToken.email : 'no user')
+    console.log('================', req.decodedIdToken ? req.decodedIdToken.uid : 'no user')
+    //------
+    let cart;
+        if(!req.session.cart){
+            // first time add to cart
+            //Create new shopping cart object
+            cart = new ShoppingCart()
+        }else {
+            cart = ShoppingCart.deserialize(req.session.cart)
+        }
+        //const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    try{
+        //Get stored items for currently signed in UID
+        const storedItems = await adminUtil.getStoredBasket(req.decodedIdToken)
+        console.log("==================LENGTH STOREDBASKET="+ storedItems.length)
+        storedItems.forEach(stored => {
+            for (let i = 0; i< stored.cart.length; i++){  //each cart is 1 stored item
+                console.log("*************"+ stored.cart[i].product.name)
+                var id = stored.cart[i].product.id
+                var name = stored.cart[i].product.name
+                var price = stored.cart[i].product.price
+                var summary = stored.cart[i].product.summary
+                var image = stored.cart[i].product.image
+                var image_url = stored.cart[i].product.image_url
+                var qty = stored.cart[i].qty
+                //const doc = collection.doc(stored.cart[i].product.id).get()
+                //const {name,price,summary,image,image_url} = doc.data()
+                cart.addfromDB({id, name, price, summary, image, image_url},qty)
+                 
+            } 
+        }) 
+        //update shopping cart into session
+        req.session.cart = cart.serialize()
+
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');       
+    }catch(e){
+        console.log('==============',e)
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');  
+    }
+    //------
     const cartCount  = req.session.cart ? req.session.cart.length : 0
     const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
     const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+
+    console.log("~~~~~~~~~~~~~~~~~~~~~~CARTCOUNT="+cartCount)
+    
    try{
        let products = []
        const snapshot = await coll.orderBy("name").get()
@@ -92,8 +136,6 @@ app.get('/',auth,async (req,res)=>{
             //Fix bug deploying to make add to cart work
             res.setHeader('Cache-Control','private');
             //-----------------------------------------
-            
-
             res.render('storefront.ejs', {error: false, products:products.slice(0,10),user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})
    }catch(e){
        //Fix bug deploying to make add to cart work
@@ -129,6 +171,7 @@ app.get('/b/signin',(req,res)=>{
     //Fix bug deploying to make add to cart work
     res.setHeader('Cache-Control','private');
     //-----------------------------------------
+    
 
     res.render('signin.ejs',{error: false,user:req.decodedIdToken,cartCount:0,cartCountW:0})
 })
@@ -146,7 +189,7 @@ app.post('/b/signin', async (req,res)=>{
         await auth.signOut()    //signout
 
         req.session.idToken = idToken   //each user has different session, store idToken into session variable
-
+      
         if(userRecord.user.email === Constants.SYSADMINEMAIL) {
 
             //Fix bug deploying to make add to cart work

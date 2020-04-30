@@ -28,7 +28,20 @@ class ShoppingCart{
             this.contents.push({product,qty:1})
         }
     }
-
+    //ADD PRODUCT TO SHOPPING CART
+    addfromDB(product,qty) {
+        console.log("=====================CHECK QUANTITY="+ qty)
+        let found = false
+        for(const item of this.contents){
+            if (item.product.id === product.id){
+                found = true;
+                item.qty = qty
+            }
+        }
+        if(!found){
+            this.contents.push({product,qty:qty})
+        }
+    }
 
     //GET TOTAL PRICE IN SHOPPING CART
         getTotal(){

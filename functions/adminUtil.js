@@ -64,11 +64,26 @@ async function getOrderHistory(decodedIdToken){
         console.log('ERROR getOrderHistory:',e)
         return null
     }
-
-
-
 }
 
+async function getStoredBasket(decodedIdToken){
+    try{
+        const collection = admin.firestore().collection(Constants.STORED_BASKET)
+        let storedItems=[]   //order history
+        console.log('BEGIN QUERY STORED ITEMS')
+       
+        const snapshot = await collection.where("uid","==",decodedIdToken.uid).get()
+        snapshot.forEach(doc => {
+            storedItems.push(doc.data())
+        })
+        console.log('END QUERY STORED ITEMS')
+        //console.log('============',orders)
+        return storedItems
+    }catch(e){
+        console.log('ERROR getStoredBasket:',e)
+        return null
+    }
+}
 async function checkOut(data){
     data.timestamp = admin. firestore.Timestamp.fromDate(new Date())
     try{
@@ -100,5 +115,6 @@ module.exports = {
     getOrderHistory,
     checkOut,
     storeBasket,
+    getStoredBasket,
 }   //Export an object
 
