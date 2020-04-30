@@ -179,16 +179,60 @@ app.post('/b/signin', async (req,res)=>{
 })
 
 
-app.get('/b/signout', async (req,res)=>{
-   req.session.destroy(err=>{
-       if(err){
-        console.log('======== session.destroy error: ', err)
-        req.session  = null
-        res.send('Error: sign out (session.destroy error)')
-       }else {
-           res.redirect('/')
-       }
-   })
+app.get('/b/signout', authAndRedirectSignIn, (req,res)=>{
+    const cartCount  = req.session.cart ? req.session.cart.length : 0
+    const data = {
+        uid: req.decodedIdToken.uid,
+        cart: req.session.cart
+    }
+    if(cartCount!=0){  //Sign Out with something in basket
+        //Store cart into Firebase before signing out
+       
+        //--------
+        
+        try{
+             adminUtil.storeBasket(data)
+            
+            //Fix bug deploying to make add to cart work
+            res.setHeader('Cache-Control','private');
+           
+        }catch(e){
+         
+            //Fix bug deploying to make add to cart work
+            res.setHeader('Cache-Control','private');
+            console.log ('ERROR', e)
+           
+        }
+        //--------
+
+        //Destroy session
+        req.session.destroy(err=>{
+            if(err){
+             console.log('======== session.destroy error: ', err)
+             req.session  = null
+             res.send('Error: sign out (session.destroy error)')
+            }else {
+                
+                res.redirect('/')
+            }
+        })
+
+    }else{
+        //cart is empty
+        //Destroy session
+        req.session.destroy(err=>{
+            if(err){
+             console.log('======== session.destroy error: ', err)
+             req.session  = null
+             res.send('Error: sign out (session.destroy error)')
+            }else {
+                
+                res.redirect('/')
+            }
+        })
+    }
+   
+   
 })
 
 app.get('/b/profile',authAndRedirectSignIn, (req,res)=>{

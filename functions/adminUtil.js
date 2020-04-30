@@ -80,11 +80,25 @@ async function checkOut(data){
     }
 }
 
+async function storeBasket(data){
+        data.timestamp = admin. firestore.Timestamp.fromDate(new Date())
+        try{
+            const collection = admin.firestore().collection(Constants.STORED_BASKET)
+            await collection.doc().set(data)
+    
+        }catch(e){
+            throw e
+        }
+}
+
+
+
 module.exports = {
     createUser,
     listUsers,
     verifyIdToken,
     getOrderHistory,
     checkOut,
+    storeBasket,
 }   //Export an object
 
