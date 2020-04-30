@@ -85,6 +85,7 @@ async function getStoredBasket(decodedIdToken){
     }
 }
 async function checkOut(data){
+    //Store to list of orders in DB
     data.timestamp = admin. firestore.Timestamp.fromDate(new Date())
     try{
         const collection = admin.firestore().collection(Constants.COLL_ORDERS)
@@ -93,6 +94,9 @@ async function checkOut(data){
     }catch(e){
         throw e
     }
+    //Delete stored basket in DB 
+    
+
 }
 
 async function storeBasket(data){

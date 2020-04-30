@@ -89,7 +89,7 @@ app.get('/',auth,async (req,res)=>{
     try{
         //Get stored items for currently signed in UID
         const storedItems = await adminUtil.getStoredBasket(req.decodedIdToken)
-        console.log("==================LENGTH STOREDBASKET="+ storedItems.length)
+        //console.log("==================LENGTH STOREDBASKET="+ storedItems.length)
         storedItems.forEach(stored => {
             for (let i = 0; i< stored.cart.length; i++){  //each cart is 1 stored item
                 console.log("*************"+ stored.cart[i].product.name)
@@ -428,13 +428,59 @@ app.post('/b/add2cart', async (req,res)=>{
     }
 })
 
-app.get('/b/shoppingcart',authAndRedirectSignIn, (req, res)=> {
+app.get('/b/shoppingcart',authAndRedirectSignIn,  async (req, res)=> {
     let cart
+    console.log("==================SHOPPING CART===================")
+
+    //------
+
+
+        if(!req.session.cart){
+            // first time add to cart
+            //Create new shopping cart object
+            cart = new ShoppingCart()
+        }else {
+            cart = ShoppingCart.deserialize(req.session.cart)
+        }
+        //const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    try{
+        //Get stored items for currently signed in UID
+        const storedItems = await adminUtil.getStoredBasket(req.decodedIdToken)
+        //console.log("==================LENGTH STOREDBASKET="+ storedItems.length)
+        storedItems.forEach(stored => {
+            for (let i = 0; i< stored.cart.length; i++){  //each cart is 1 stored item
+                console.log("*************"+ stored.cart[i].product.name)
+                var id = stored.cart[i].product.id
+                var name = stored.cart[i].product.name
+                var price = stored.cart[i].product.price
+                var summary = stored.cart[i].product.summary
+                var image = stored.cart[i].product.image
+                var image_url = stored.cart[i].product.image_url
+                var qty = stored.cart[i].qty
+                //const doc = collection.doc(stored.cart[i].product.id).get()
+                //const {name,price,summary,image,image_url} = doc.data()
+                cart.addfromDB({id, name, price, summary, image, image_url},qty)
+                 
+            } 
+        }) 
+        //update shopping cart into session
+        req.session.cart = cart.serialize()
+
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');       
+    }catch(e){
+        console.log('==============',e)
+        //Fix bug deploying to make add to cart work
+        res.setHeader('Cache-Control','private');  
+    }
+    //------
+
     if(!req.session.cart){
         cart = new ShoppingCart()
     } else {
         cart = ShoppingCart.deserialize(req.session.cart)
     }
+
     //Fix bug deploying to make add to cart work
     res.setHeader('Cache-Control','private');
     //-----------------------------------------
