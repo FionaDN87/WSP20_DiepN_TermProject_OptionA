@@ -72,7 +72,7 @@ async function getStoredBasket(decodedIdToken){
         let storedItems=[]   //order history
         console.log('BEGIN QUERY STORED ITEMS')
        
-        const snapshot = await collection.where("uid","==",decodedIdToken.uid).get()
+        const snapshot = await collection.where("uid","==",decodedIdToken.uid).orderBy("timestamp").get()
         snapshot.forEach(doc => {
             storedItems.push(doc.data())
         })
@@ -119,6 +119,7 @@ async function checkOut(data,decodedIdToken){
 }
 
 async function storeBasket(data,decodedIdToken){
+    /*
     let fs = admin.firestore();
     let collectionRef = fs.collection(Constants.STORED_BASKET)
     collectionRef.where("uid","==",decodedIdToken.uid).get()
@@ -136,7 +137,7 @@ async function storeBasket(data,decodedIdToken){
             console.log("Error getting documents: ", error);
           
         }); 
-
+*/
 
         data.timestamp = admin. firestore.Timestamp.fromDate(new Date())
         try{

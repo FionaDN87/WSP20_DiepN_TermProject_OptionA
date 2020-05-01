@@ -43,6 +43,20 @@ class ShoppingCart{
         }
     }
 
+    addfromDB2(product,qty) {
+        console.log("=====================CHECK QUANTITY="+ qty)
+        let found = false
+        for(const item of this.contents){
+            if (item.product.id === product.id){
+                found = true;
+                item.qty = qty+1
+            }
+        }
+        if(!found){
+            this.contents.push({product,qty:qty})
+        }
+    }
+
     //GET TOTAL PRICE IN SHOPPING CART
         getTotal(){
             let sum = 0

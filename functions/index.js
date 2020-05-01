@@ -102,7 +102,7 @@ app.get('/',auth,async (req,res)=>{
                 var qty = stored.cart[i].qty
                 //const doc = collection.doc(stored.cart[i].product.id).get()
                 //const {name,price,summary,image,image_url} = doc.data()
-                cart.addfromDB({id, name, price, summary, image, image_url},qty)
+                cart.addfromDB2({id, name, price, summary, image, image_url},qty)
                  
             } 
         }) 
@@ -396,11 +396,24 @@ app.get('/b/signup',(req,res)=>{
 
 const ShoppingCart = require('./model/ShoppingCart.js')
 app.post('/b/add2cart', async (req,res)=>{
+    console.log("==============ADD2CART===================")
     const id = req.body.docID
+
     const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    
+
     try{
-        const doc = await collection.doc(id).get()
+        const doc = await collection.doc(id).get()    //Get product info based on product docID
         //Store product ID into shopping cart
+
+        try{
+            const storeItems = await adminUtil.getStoredBasket(req.decodedIdToken)
+
+        }catch(e){
+            throw e
+        }
+        
+
         let cart;
         if(!req.session.cart){
             // first time add to cart
@@ -414,6 +427,11 @@ app.post('/b/add2cart', async (req,res)=>{
 
         //update shopping cart into session
         req.session.cart = cart.serialize()
+
+        
+
+
+
 
         //Fix bug deploying to make add to cart work
         res.setHeader('Cache-Control','private');
@@ -480,6 +498,9 @@ app.get('/b/shoppingcart',authAndRedirectSignIn,  async (req, res)=> {
     } else {
         cart = ShoppingCart.deserialize(req.session.cart)
     }
+    
+     //update shopping cart into session
+     req.session.cart = cart.serialize()
 
     //Fix bug deploying to make add to cart work
     res.setHeader('Cache-Control','private');
