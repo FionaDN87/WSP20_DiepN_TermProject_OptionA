@@ -35,7 +35,7 @@ class ShoppingCart{
         for(const item of this.contents){
             if (item.product.id === product.id){
                 found = true;
-                item.qty = qty
+                item.qty = qty+1
             }
         }
         if(!found){
