@@ -118,8 +118,25 @@ async function checkOut(data,decodedIdToken){
 
 }
 
-async function storeBasket(data){
-        
+async function storeBasket(data,decodedIdToken){
+    let fs = admin.firestore();
+    let collectionRef = fs.collection(Constants.STORED_BASKET)
+    collectionRef.where("uid","==",decodedIdToken.uid).get()
+        .then(querySnapshot =>{
+            querySnapshot.forEach((doc) =>{
+                doc.ref.delete().then(()=>{
+                    console.log("==========Document successfully deleted!=============")
+                    return null;
+                }).catch(function(error){
+                    console.error("Error removing document: ", error);
+                    
+                });
+            }); return null
+        }).catch(function(error){
+            console.log("Error getting documents: ", error);
+          
+        }); 
+
 
         data.timestamp = admin. firestore.Timestamp.fromDate(new Date())
         try{

@@ -234,7 +234,7 @@ app.get('/b/signout', authAndRedirectSignIn, (req,res)=>{
         //--------
         
         try{
-             adminUtil.storeBasket(data)
+             adminUtil.storeBasket(data, req.decodedIdToken)
             
             //Fix bug deploying to make add to cart work
             res.setHeader('Cache-Control','private');
