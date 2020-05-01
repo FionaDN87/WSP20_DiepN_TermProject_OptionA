@@ -84,7 +84,26 @@ async function getStoredBasket(decodedIdToken){
         return null
     }
 }
-async function checkOut(data){
+async function checkOut(data,decodedIdToken){
+    //console.log("===CHECKOUT ADMINUTIL=======decodedIDToken="+ decodedIdToken.uid)
+    let fs = admin.firestore();
+    let collectionRef = fs.collection(Constants.STORED_BASKET)
+    collectionRef.where("uid","==",decodedIdToken.uid).get()
+        .then(querySnapshot =>{
+            querySnapshot.forEach((doc) =>{
+                doc.ref.delete().then(()=>{
+                    console.log("==========Document successfully deleted!=============")
+                    return null;
+                }).catch(function(error){
+                    console.error("Error removing document: ", error);
+                    
+                });
+            }); return null
+        }).catch(function(error){
+            console.log("Error getting documents: ", error);
+          
+        }); 
+
     //Store to list of orders in DB
     data.timestamp = admin. firestore.Timestamp.fromDate(new Date())
     try{
@@ -100,6 +119,8 @@ async function checkOut(data){
 }
 
 async function storeBasket(data){
+        
+
         data.timestamp = admin. firestore.Timestamp.fromDate(new Date())
         try{
             const collection = admin.firestore().collection(Constants.STORED_BASKET)

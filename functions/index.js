@@ -228,7 +228,7 @@ app.get('/b/signout', authAndRedirectSignIn, (req,res)=>{
         uid: req.decodedIdToken.uid,
         cart: req.session.cart
     }
-    if(cartCount!=0){  //Sign Out with something in basket
+    if(cartCount!==0){  //Sign Out with something in basket
         //Store cart into Firebase before signing out
        
         //--------
@@ -543,7 +543,7 @@ app.post('/b/checkout',authAndRedirectSignIn,async (req,res)=>{
         cart: req.session.cart
     }
     try{
-        await adminUtil.checkOut(data)
+        await adminUtil.checkOut(data,req.decodedIdToken)
         req.session.cart = null //empty cart
         //Fix bug deploying to make add to cart work
         res.setHeader('Cache-Control','private');
