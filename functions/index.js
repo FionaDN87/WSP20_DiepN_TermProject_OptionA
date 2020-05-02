@@ -262,7 +262,7 @@ app.post('/b/signin', async (req,res)=>{
             //-----------------------------------------
             //Direct to regular page
             res.redirect('/')
-            } else {
+            } else {  
                 //Fix bug deploying to make add to cart work
                 res.setHeader('Cache-Control','private');
                 //-----------------------------------------
