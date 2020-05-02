@@ -74,8 +74,62 @@ const firebaseConfig = {
   const Constants = require('./myconstant.js')
   const adminUtil = require('./adminUtil.js')
 
+//---add home when back from shopping cart
+app.get('/back',auth,async (req,res)=>{
+    console.log('======='/'=========', req.decodedIdToken ? req.decodedIdToken.uid : 'no user')
+    console.log("==============='/back'=================")
+    //------
+    let cart;
+        if(!req.session.cart){
+            // first time add to cart
+            //Create new shopping cart object
+            cart = new ShoppingCart()
+            console.log("========================create new cart===============================")
+        }else {
+            cart = ShoppingCart.deserialize(req.session.cart)
+            console.log("========================deserialize cart===============================")
+        }
+        //const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    
+    //------
+    const cartCount  = req.session.cart ? req.session.cart.length : 0
+    const cartCountW  = req.session.cartW ? req.session.cartW.length : 0
+    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+
+    console.log("~~~~~~~~~~~~~~~~~~~~~~CARTCOUNT="+cartCount)
+    
+   try{
+       let products = []
+       const snapshot = await coll.orderBy("name").get()
+       snapshot.forEach(doc =>{
+           products.push({id: doc.id, data:doc.data()})
+       })
+       var pages=(Math.ceil(products.length/10));
+       //Display on web browser
+            //res.send(JSON.stringify(products))
+            
+            //Fix bug deploying to make add to cart work
+            res.setHeader('Cache-Control','private');
+            //-----------------------------------------
+            res.render('storefront.ejs', {error: false, products:products.slice(0,10),user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})
+   }catch(e){
+       //Fix bug deploying to make add to cart work
+       res.setHeader('Cache-Control','private');
+       //-----------------------------------------
+       //res.send(JSON.stringify(e))
+        res.render('storefront.ejs',{error: e,user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})  //if error true, give error message
+   }
+})
+
+
+
+//----
+
+
+
+
 app.get('/',auth,async (req,res)=>{
-    console.log('================', req.decodedIdToken ? req.decodedIdToken.uid : 'no user')
+    console.log('======='/'=========', req.decodedIdToken ? req.decodedIdToken.uid : 'no user')
     console.log("==============='/'=================")
     //------
     let cart;
@@ -398,18 +452,16 @@ app.get('/b/signup',(req,res)=>{
 
 
 const ShoppingCart = require('./model/ShoppingCart.js')
-app.post('/b/add2cart',authAndRedirectSignIn, async (req,res)=>{
+
+app.post('/b/add2cart', async (req,res)=>{
     console.log("==============ADD2CART===================")
-let cart=[]
-    //When product is not in storedItem
+    console.log('=======ADD2CART=========', req.decodedIdToken ? req.decodedIdToken.uid : 'no user')
     const id = req.body.docID
     const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
     try{
-        const doc = await collection.doc(id).get()    //Get product info based on product docID
+        const doc = await collection.doc(id).get()
         //Store product ID into shopping cart
-
-        
-        //let cart;
+        let cart;
         if(!req.session.cart){
             // first time add to cart
             //Create new shopping cart object
@@ -422,34 +474,6 @@ let cart=[]
 
         //update shopping cart into session
         req.session.cart = cart.serialize()
-
-        //Update storeItems in DB
-         //--------
-         const data = {
-            uid: req.decodedIdToken.uid,
-            cart: req.session.cart
-        }
-        try{
-            adminUtil.storeBasket(data, req.decodedIdToken)
-           
-           //Fix bug deploying to make add to cart work
-           res.setHeader('Cache-Control','private');
-          
-       }catch(e){
-        
-           //Fix bug deploying to make add to cart work
-           res.setHeader('Cache-Control','private');
-           console.log ('ERROR', e)
-          
-       }
-       //--------
-
-        //Update storeItems in DB
-       
-        
-        res.render('shoppingcart.ejs',{message: false, cart, user: req.decodedIdToken, cartCount: cart.contents.length})
-        res.render('storefront.ejs', {error: false,cart, products:products.slice(0,10),user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})
-
 
         //Fix bug deploying to make add to cart work
         res.setHeader('Cache-Control','private');
@@ -466,68 +490,19 @@ let cart=[]
 
 app.get('/b/shoppingcart',authAndRedirectSignIn,  async (req, res)=> {
     let cart
-    console.log("==================SHOPPING CART===================")
-
-    //------
-
-
-        if(!req.session.cart){
-            // first time add to cart
-            //Create new shopping cart object
-            cart = new ShoppingCart()
-
-        }else {
-            cart = ShoppingCart.deserialize(req.session.cart)
-        }
-        //const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
-    try{
-        //Get stored items for currently signed in UID
-        const storedItems = await adminUtil.getStoredBasket(req.decodedIdToken)
-        //console.log("==================LENGTH STOREDBASKET="+ storedItems.length)
-        storedItems.forEach(stored => {
-            for (let i = 0; i< stored.cart.length; i++){  //each cart is 1 stored item
-                //console.log("*************"+ stored.cart[i].product.name)
-                var id = stored.cart[i].product.id
-                var name = stored.cart[i].product.name
-                var price = stored.cart[i].product.price
-                var summary = stored.cart[i].product.summary
-                var image = stored.cart[i].product.image
-                var image_url = stored.cart[i].product.image_url
-                var qty = stored.cart[i].qty
-                //const doc = collection.doc(stored.cart[i].product.id).get()
-                //const {name,price,summary,image,image_url} = doc.data()
-                cart.addfromDB({id, name, price, summary, image, image_url},qty)
-                 
-            } 
-        }) 
-        //update shopping cart into session
-        req.session.cart = cart.serialize()
-
-        //Fix bug deploying to make add to cart work
-        res.setHeader('Cache-Control','private');       
-    }catch(e){
-        console.log('==============',e)
-        //Fix bug deploying to make add to cart work
-        res.setHeader('Cache-Control','private');  
-    }
-    //------
-
     if(!req.session.cart){
         cart = new ShoppingCart()
     } else {
         cart = ShoppingCart.deserialize(req.session.cart)
     }
-    
-     //update shopping cart into session
-     req.session.cart = cart.serialize()
 
+
+    
     //Fix bug deploying to make add to cart work
     res.setHeader('Cache-Control','private');
     //-----------------------------------------
     //passing cart into shoppingcart.ejs
     res.render('shoppingcart.ejs',{message: false, cart, user: req.decodedIdToken, cartCount: cart.contents.length})
-    
-    res.render('storefront.ejs', {error: false,cart, products:products.slice(0,10),user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})
 })
 
 //----
@@ -703,6 +678,7 @@ async function auth(req,res,next){
         if(req.session && req.session.idToken){
             const decodedIdToken = await adminUtil.verifyIdToken(req.session.idToken)
             req.decodedIdToken = decodedIdToken
+            return next()
         } else{  //no sign in yet
             req.decodedIdToken = null
         }
