@@ -76,14 +76,17 @@ const firebaseConfig = {
 
 app.get('/',auth,async (req,res)=>{
     console.log('================', req.decodedIdToken ? req.decodedIdToken.uid : 'no user')
+    console.log("==============='/'=================")
     //------
     let cart;
         if(!req.session.cart){
             // first time add to cart
             //Create new shopping cart object
             cart = new ShoppingCart()
+            console.log("========================create new cart===============================")
         }else {
             cart = ShoppingCart.deserialize(req.session.cart)
+            console.log("========================deserialize cart===============================")
         }
         //const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
     try{
@@ -102,12 +105,12 @@ app.get('/',auth,async (req,res)=>{
                 var qty = stored.cart[i].qty
                 //const doc = collection.doc(stored.cart[i].product.id).get()
                 //const {name,price,summary,image,image_url} = doc.data()
-                cart.addfromDB2({id, name, price, summary, image, image_url},qty)
-                 
+                cart.addfromDB({id, name, price, summary, image, image_url},qty)
+                //update shopping cart into session
+                req.session.cart = cart.serialize()
             } 
         }) 
-        //update shopping cart into session
-        req.session.cart = cart.serialize()
+        
 
         //Fix bug deploying to make add to cart work
         res.setHeader('Cache-Control','private');       
@@ -395,26 +398,18 @@ app.get('/b/signup',(req,res)=>{
 
 
 const ShoppingCart = require('./model/ShoppingCart.js')
-app.post('/b/add2cart', async (req,res)=>{
+app.post('/b/add2cart',authAndRedirectSignIn, async (req,res)=>{
     console.log("==============ADD2CART===================")
+let cart=[]
+    //When product is not in storedItem
     const id = req.body.docID
-
     const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
-    
-
     try{
         const doc = await collection.doc(id).get()    //Get product info based on product docID
         //Store product ID into shopping cart
 
-        try{
-            const storeItems = await adminUtil.getStoredBasket(req.decodedIdToken)
-
-        }catch(e){
-            throw e
-        }
         
-
-        let cart;
+        //let cart;
         if(!req.session.cart){
             // first time add to cart
             //Create new shopping cart object
@@ -428,9 +423,32 @@ app.post('/b/add2cart', async (req,res)=>{
         //update shopping cart into session
         req.session.cart = cart.serialize()
 
+        //Update storeItems in DB
+         //--------
+         const data = {
+            uid: req.decodedIdToken.uid,
+            cart: req.session.cart
+        }
+        try{
+            adminUtil.storeBasket(data, req.decodedIdToken)
+           
+           //Fix bug deploying to make add to cart work
+           res.setHeader('Cache-Control','private');
+          
+       }catch(e){
         
+           //Fix bug deploying to make add to cart work
+           res.setHeader('Cache-Control','private');
+           console.log ('ERROR', e)
+          
+       }
+       //--------
 
-
+        //Update storeItems in DB
+       
+        
+        res.render('shoppingcart.ejs',{message: false, cart, user: req.decodedIdToken, cartCount: cart.contents.length})
+        res.render('storefront.ejs', {error: false,cart, products:products.slice(0,10),user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})
 
 
         //Fix bug deploying to make add to cart work
@@ -457,6 +475,7 @@ app.get('/b/shoppingcart',authAndRedirectSignIn,  async (req, res)=> {
             // first time add to cart
             //Create new shopping cart object
             cart = new ShoppingCart()
+
         }else {
             cart = ShoppingCart.deserialize(req.session.cart)
         }
@@ -467,7 +486,7 @@ app.get('/b/shoppingcart',authAndRedirectSignIn,  async (req, res)=> {
         //console.log("==================LENGTH STOREDBASKET="+ storedItems.length)
         storedItems.forEach(stored => {
             for (let i = 0; i< stored.cart.length; i++){  //each cart is 1 stored item
-                console.log("*************"+ stored.cart[i].product.name)
+                //console.log("*************"+ stored.cart[i].product.name)
                 var id = stored.cart[i].product.id
                 var name = stored.cart[i].product.name
                 var price = stored.cart[i].product.price
@@ -507,6 +526,8 @@ app.get('/b/shoppingcart',authAndRedirectSignIn,  async (req, res)=> {
     //-----------------------------------------
     //passing cart into shoppingcart.ejs
     res.render('shoppingcart.ejs',{message: false, cart, user: req.decodedIdToken, cartCount: cart.contents.length})
+    
+    res.render('storefront.ejs', {error: false,cart, products:products.slice(0,10),user:req.decodedIdToken,cartCount,cartCountW,pages,current:1})
 })
 
 //----

@@ -30,12 +30,13 @@ class ShoppingCart{
     }
     //ADD PRODUCT TO SHOPPING CART
     addfromDB(product,qty) {
-        console.log("=====================CHECK QUANTITY="+ qty)
+        
+        console.log("=====================CHECK QUANTITY from DB="+ qty)
         let found = false
         for(const item of this.contents){
             if (item.product.id === product.id){
                 found = true;
-                item.qty = qty
+                item.qty=qty
             }
         }
         if(!found){
@@ -44,7 +45,7 @@ class ShoppingCart{
     }
 
     addfromDB2(product,qty) {
-        console.log("=====================CHECK QUANTITY="+ qty)
+        console.log("=====================CHECK QUANTITY from DB2="+ qty)
         let found = false
         for(const item of this.contents){
             if (item.product.id === product.id){
