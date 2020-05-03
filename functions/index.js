@@ -127,7 +127,7 @@ app.get('/back',auth,async (req,res)=>{
 
 
 
-
+//Regular sign in is directly to home page '/'
 app.get('/',auth,async (req,res)=>{
     console.log('======='/'=========', req.decodedIdToken ? req.decodedIdToken.uid : 'no user')
     console.log("==============='/'=================")
@@ -396,7 +396,7 @@ app.get('/b/cart',auth, (req,res)=>{
    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
                            //.where('cat'), isEqualTo: 'products'
                            .where("cat", "==","patterns")
-
+ 
    try{
        let patterns = []
        const snapshot = await coll.get()
